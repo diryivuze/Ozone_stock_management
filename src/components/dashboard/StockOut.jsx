@@ -171,7 +171,7 @@ const StockOut = () => {
               <label className="block mb-1 font-medium">Price Per Unit:</label>
               <input
                 type="text"
-                value={`Frw ${selectedItemData.pricePerUnit.toFixed(2)}`}
+                value={`Frw ${selectedItemData.pricePerUnit}`}
                 readOnly
                 className="border border-gray-300 p-2 rounded w-full bg-gray-200"
               />
@@ -223,7 +223,7 @@ const StockOut = () => {
             <tr key={item.id}>
               <td className="py-2 px-4 border-b">{item.productName}</td>
               <td className="py-2 px-4 border-b">{item.quantity}</td>
-              <td className="py-2 px-4 border-b">Frw {item.pricePerUnit.toFixed(2)}</td>
+              <td className="py-2 px-4 border-b">Frw {item.pricePerUnit}</td>
               <td className="py-2 px-4 border-b flex space-x-2">
                 <button onClick={() => handleEditProduct(item)} className="text-blue-500">
                   <AiFillEdit />

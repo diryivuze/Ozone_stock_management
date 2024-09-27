@@ -174,7 +174,7 @@ const StockIn = ({ products, setProducts }) => {
                   <td className="border border-gray-300 px-4 py-2">{item.quantity}</td>
                   <td className="border border-gray-300 px-4 py-2">{item.date}</td>
                   <td className="border border-gray-300 px-4 py-2">{item.type}</td>
-                  <td className="border border-gray-300 px-4 py-2">{item.price.toFixed(2)}</td>
+                  <td className="border border-gray-300 px-4 py-2">{item.price}</td>
                 </tr>
               ))}
             </tbody>

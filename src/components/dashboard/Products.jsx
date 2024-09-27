@@ -75,9 +75,9 @@ const Products = () => {
 
       // Check if the response is successful
       if (response.status === 201) {
+        getAll()
         toast.success("Product added successfully!");
         setShowAddProductModal(false);
-        getAll()
         resetForm(); // Reset form after successful addition
       } else {
         throw new Error("Failed to add product"); // Handle non-201 responses
@@ -238,11 +238,11 @@ const Products = () => {
         </thead>
         <tbody className="text-gray-600 text-sm font-light">
           {currentItems.map((product) => (
-            <tr key={product.id} className="border-b border-gray-200 hover:bg-gray-100">
+            <tr key={product.id+product.name} className="border-b border-gray-200 hover:bg-gray-100">
               <td className="py-3 text-center px-6">{product.id}</td>
               <td className="py-3 text-center px-6">{product.name}</td>
               <td className="py-3 text-center px-6">{product.type}</td>
-              <td className="py-3 text-center px-6">Frw {product.price.toFixed(2)}</td> {/* New Price Column */}
+              <td className="py-3 text-center px-6">Frw {product.price}</td> {/* New Price Column */}
               <td className="py-3 justify-center px-6 flex space-x-3">
                 {/* Update and Delete icons */}
                 <FaEdit
@@ -296,7 +296,7 @@ const Products = () => {
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-8 rounded shadow-md w-11/12 md:w-1/3">
             <h3 className="text-2xl font-semibold mb-6">{isEditMode ? "Edit Product" : "Add New Product"}</h3>
-            <form onSubmit={isEditMode ? handleUpdateProduct : handleProductSubmit}>
+            <form onSubmit={isEditMode ? handleUpdateProduct : handleAddProduct}>
               <div className="mb-4">
                 <label className="block mb-1 font-medium">Product Name:</label>
                 <input
