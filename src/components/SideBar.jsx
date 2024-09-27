@@ -19,6 +19,7 @@ const Sidebar = ({ isOpen, setIsOpen, activeView, setActiveView }) => {
   };
 
   const handleSetActive = (view) => {
+    localStorage.setItem('viewmode', view);
     setActiveView(view);
   };
 
@@ -68,7 +69,7 @@ const Sidebar = ({ isOpen, setIsOpen, activeView, setActiveView }) => {
       {/* Logout Button at the Bottom */}
       <div className="absolute bottom-0 w-full">
         <Link
-          to="/Login"
+          onClick={()=>{localStorage.clear();window.location.href=""}}
           className="flex items-center p-4 hover:bg-red-700 transition-all text-white font-medium"
         >
           <FaSignOutAlt className="text-xl" />

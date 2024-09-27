@@ -7,6 +7,7 @@ import AboutUs from "./Pages/AboutUs";
 import ContactUs from "./Pages/ContactUs";
 
 const App = () => {
+  const dash = localStorage.getItem('Ozone_token') ? <Dashboard /> : <LogIn />
   return (
     <Router>
       <Routes>
@@ -15,8 +16,8 @@ const App = () => {
 
         {/* Define route for "/home" */}
         <Route path="/home" element={<HomePage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/login" element={<LogIn />} />
+        <Route path="/dashboard" element={dash} />
+        <Route path="/login" element={dash} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<ContactUs />} />
       </Routes>

@@ -14,7 +14,7 @@ const Dashboard = () => {
   // State management
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Sidebar toggle state
   const [showDropdown, setShowDropdown] = useState(false); // Dropdown menu state
-  const [activeView, setActiveView] = useState("overview"); // Active dashboard view state
+  const [activeView, setActiveView] = useState(localStorage.getItem('viewmode')); // Active dashboard view state
 
   // Toggle the visibility of the dropdown menu
   const toggleDropdown = () => setShowDropdown((prev) => !prev);

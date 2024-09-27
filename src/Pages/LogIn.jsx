@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom'; // Import useNavigate for redire
 import Navbar from '../components/NavBar';
 import { ToastContainer, toast } from 'react-toastify'; // Import Toastify components
 import 'react-toastify/dist/ReactToastify.css'; // Import Toastify CSS
+import axios from 'axios'
 
 // Combined NavBar component
 const NavBar = () => {
   return (
-    <Navbar/>
+    <Navbar />
   );
 };
 
@@ -21,15 +22,34 @@ const LogIn = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Check if credentials are correct
-    if (username === 'admin' && password === 'admin@123') {
-      toast.success('Welcome back!'); // Show success toast
-      setTimeout(() => {
-        navigate('/dashboard'); // Redirect to the dashboard after showing toast
-      }, 2000); // Delay redirection to show the toast
-    } else {
-      toast.error('Incorrect username or password'); // Show error toast
+    let data = {
+      "username": username,
+      "password": password
     }
+    axios.post(`${import.meta.env.VITE_MAIN_URL}/auth/login`, data)
+      .then(response => {
+        if (response.status === 200) {
+          // Update (overwrite item)
+          localStorage.setItem('Ozone_token', response.data.access_token);
+          localStorage.setItem('viewmode', "overview");
+          window.location.href = "";
+
+          // console.log(response.data.access_token)
+          // navigate('/dashboard');
+        } else {
+          toast.error("Error While Logging TRy Again Later")
+        }
+
+
+      })
+      .catch(error => {
+        if (error.response.status == 401) {
+          toast.error(error.response.data.detail)
+        } else {
+          toast.error("system is down contact the admin")
+        }
+      })
+
   };
 
   const handleGoogleLogin = () => {
@@ -92,7 +112,7 @@ const LogIn = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 top-7 pr-3 flex items-center text-gray-500"
                 >
-                  {showPassword ? <FaEyeSlash size={20}  /> : <FaEye size={20} />}
+                  {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
                 </button>
               </div>
               <div className="flex items-center mb-4">
@@ -141,8 +161,8 @@ const LogIn = () => {
 
             {/* Back to Home Button */}
             <div className="text-center mt-8">
-              <a 
-                href="/" 
+              <a
+                href="/"
                 className="inline-block bg-gray-700 text-gray-300 py-2 px-4 rounded-lg hover:bg-gray-300 hover:text-gray-900 transition duration-300"
               >
                 Back to Home
@@ -184,7 +204,7 @@ const LogIn = () => {
                 allowFullScreen=""
                 loading="lazy"
               ></iframe>
-          
+
             </div>
           </div>
         </div>
