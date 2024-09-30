@@ -201,9 +201,9 @@ const Products = () => {
   // To open the modal for editing
   const handleEditProduct = (product) => {
     setEditingProductId(product.id);
-    setNewProductName(product.product_name);
-    setNewProductType(product.product_type);
-    setNewProductPrice(product.product_price);
+    setNewProductName(product.name);
+    setNewProductType(product.type);
+    setNewProductPrice(product.price);
     setIsEditMode(true);
     setShowAddProductModal(true);
   };
