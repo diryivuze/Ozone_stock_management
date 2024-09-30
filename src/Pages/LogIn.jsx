@@ -138,27 +138,6 @@ const LogIn = () => {
               <a href="/forgot-password" className="text-sm text-indigo-500 hover:underline">Forgot Password?</a>
             </div>
 
-            {/* Alternative Login Options */}
-            <div className="flex items-center justify-center my-6">
-              <span className="w-1/3 border-t border-gray-300"></span>
-              <span className="text-gray-500 mx-4">Or login with</span>
-              <span className="w-1/3 border-t border-gray-300"></span>
-            </div>
-            <div className="flex justify-center space-x-4">
-              <button
-                onClick={handleGoogleLogin}
-                className="w-10 h-10 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-400 transition duration-300"
-              >
-                <FaGoogle size={20} />
-              </button>
-              <button
-                onClick={handleFacebookLogin}
-                className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-500 transition duration-300"
-              >
-                <FaFacebookF size={20} />
-              </button>
-            </div>
-
             {/* Back to Home Button */}
             <div className="text-center mt-8">
               <a

@@ -163,11 +163,11 @@ const HomeDash = () => {
         {/* Modal for Product Details */}
         {showModal && selectedProduct && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-white p-6 rounded-lg shadow-md w-1/3">
               <h3 className="text-lg font-semibold mb-4">Product Details</h3>
-              <p><strong>Product:</strong> {selectedProduct.detail}</p>
-              <p><strong>Quantity:</strong> {selectedProduct.quantity}</p>
-              <p><strong>Price per unit:</strong> Frw {selectedProduct.price}</p>
+              <p className="mb-4"><strong>Product:</strong> {selectedProduct.detail}</p>
+              <p className="mb-4"><strong>Quantity:</strong> {selectedProduct.quantity}</p>
+              <p className="mb-4"><strong>Price per unit:</strong> Frw {selectedProduct.price}</p>
               <button
                 onClick={handleCloseModal}
                 className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
