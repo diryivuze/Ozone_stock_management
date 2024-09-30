@@ -221,14 +221,14 @@ const StockOut = () => {
         <tbody>
           {displayedStock.map(item => (
             <tr key={item.id}>
-              <td className="py-2 px-4 border-b">{item.productName}</td>
-              <td className="py-2 px-4 border-b">{item.quantity}</td>
-              <td className="py-2 px-4 border-b">Frw {item.pricePerUnit}</td>
-              <td className="py-2 px-4 border-b flex space-x-2">
-                <button onClick={() => handleEditProduct(item)} className="text-blue-500">
+              <td className="py-2 text-center px-4 border-b">{item.productName}</td>
+              <td className="py-2 text-center px-4 border-b">{item.quantity}</td>
+              <td className="py-2 text-center px-4 border-b">Frw {item.pricePerUnit}</td>
+              <td className="py-2 text-center px-4 border-b flex space-x-2">
+                <button onClick={() => handleEditProduct(item)} className="text-blue-500 justfy-cent ">
                   <AiFillEdit />
                 </button>
-                <button onClick={() => handleDeleteProduct(item.id)} className="text-red-500">
+                <button onClick={() => handleDeleteProduct(item.id)} className="text-red-500 justfy-cent ">
                   <AiFillDelete />
                 </button>
               </td>
@@ -346,14 +346,14 @@ const StockOut = () => {
         </div>
       )}
 
-      <div className="flex justify-end mb-4 mt-7">
+      {/* <div className="flex justify-end mb-4 mt-7">
         <button
           onClick={() => setShowAddProductModal(true)}
           className="bg-yellow-500 text-white px-6 py-2 rounded shadow hover:bg-yellow-600 transition"
         >
           Add Product
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };

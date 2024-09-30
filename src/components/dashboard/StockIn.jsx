@@ -2,18 +2,34 @@ import React, { useState, useEffect } from "react";
 import { AiFillDelete, AiFillEdit } from "react-icons/ai";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { publicAxios } from "../tokenGetter/api";
 
 const StockIn = ({ products, setProducts }) => {
-  const initialStockItems = [
-    { id: 1, productName: "Donuts", quantity: 50, date: "2024-09-16", type: "Food", price: 100 },
-    { id: 2, productName: "Cake", quantity: 30, date: "2024-09-15", type: "Food", price: 200 },
-    { id: 3, productName: "Fanta (small)", quantity: 50, date: "2024-09-15", type: "Drink", price: 1000 },
-    { id: 4, productName: "Capati", quantity: 40, date: "2024-09-16", type: "Food", price: 200 },
-    { id: 5, productName: "Samosa", quantity: 10, date: "2024-09-15", type: "Food", price: 300 },
-    { id: 6, productName: "Orange", quantity: 20, date: "2024-09-15", type: "Drink", price: 1000 },
-    
-  ];
+  const api = publicAxios()
+  const [initialStockItems, SetinitialStockItems] = useState([]); // Initially empty array
 
+  const getAll = () => {
+    api.get(`${import.meta.env.VITE_MAIN_URL}/products/`)
+      .then(res => {
+        // Map the response to match the format of initialStockItems
+        const mappedData = res.data.map(item => ({
+          id: item.Pro_id,
+          productName: item.product_name,
+          quantity: 0, // Assuming you want quantity as 0 initially
+          date: item.date.split("T")[0], // Format date if needed
+          type: item.product_type,
+          price: parseFloat(item.product_price), // Convert price to float
+        }));
+        setStockItems(mappedData); // Set the mapped data
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
+  useEffect(() => {
+    getAll();
+  }, []);
   const [stockItems, setStockItems] = useState(initialStockItems);
   const [selectedProduct, setSelectedProduct] = useState("");
   const [quantity, setQuantity] = useState("");
@@ -203,14 +219,14 @@ const StockIn = ({ products, setProducts }) => {
 &nbsp;
       
       {/* Add Product Button */}
-      <div className="flex justify-end mb-4">
+      {/* <div className="flex justify-end mb-4">
         <button
           onClick={() => setShowAddProductModal(true)}
           className="bg-yellow-500 text-white px-6 py-2 rounded shadow hover:bg-yellow-600 transition"
         >
           Add Product
         </button>
-      </div>
+      </div> */}
 
       {/* Add Product Modal */}
       {showAddProductModal && (

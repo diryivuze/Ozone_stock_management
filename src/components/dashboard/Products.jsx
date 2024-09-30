@@ -228,7 +228,7 @@ const Products = () => {
       {/* Product Table */}
       <table className="w-full text-center table-auto">
         <thead>
-          <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+          <tr className="bg-gray-200 text-gray-900 uppercase text-sm leading-normal">
             <th className="py-3 px-6">ID</th>
             <th className="py-3 px-6">Product</th>
             <th className="py-3 px-6">Type</th>
@@ -236,7 +236,7 @@ const Products = () => {
             <th className="py-3 px-6">Actions</th>
           </tr>
         </thead>
-        <tbody className="text-gray-600 text-sm font-light">
+        <tbody className="text-gray-600 text-sm">
           {currentItems.map((product) => (
             <tr key={product.id+product.name} className="border-b border-gray-200 hover:bg-gray-100">
               <td className="py-3 text-center px-6">{product.id}</td>
