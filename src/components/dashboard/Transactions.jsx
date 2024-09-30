@@ -116,10 +116,10 @@ const Transactions = () => {
         <tbody>
           {currentTransactions.map((transaction) => (
             <tr key={transaction.id}>
-              <td className="border border-gray-300 p-2">{transaction.id}</td>
-              <td className="border border-gray-300 p-2">{transaction.description}</td>
-              <td className="border border-gray-300 p-2">{transaction.amount}</td>
-              <td className="border border-gray-300 p-2 capitalize">{transaction.type}</td>
+              <td className="border border-gray-300 text-center p-2">{transaction.id}</td>
+              <td className="border border-gray-300 text-center p-2">{transaction.description}</td>
+              <td className="border border-gray-300 text-center p-2">Frw {transaction.amount}</td>
+              <td className="border border-gray-300 text-center p-2 capitalize">{transaction.type}</td>
             </tr>
           ))}
         </tbody>
