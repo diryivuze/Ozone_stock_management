@@ -4,50 +4,82 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { publicAxios } from "../tokenGetter/api";
 
-const StockIn = ({ products, setProducts }) => {
-  const api = publicAxios()
-  const [initialStockItems, SetinitialStockItems] = useState([]); // Initially empty array
+const StockIn = () => {
+  const api = publicAxios();
 
-  const getAll = () => {
+  const [initialStockItems, SetinitialStockItems] = useState([]);
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [newStock, setNewStock] = useState({
+    product_id: "",
+    product_quantity: "",
+    price_per_unit: "",
+    total_price: "",
+    date: "",
+  });
+
+  const [stockData, setStockData] = useState([]); // All stock data
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5); // Define the number of items per page
+  const [sortByDate, setSortByDate] = useState("asc");
+
+  // Fetch all products and stock data
+  useEffect(() => {
+    getAllProducts();
+    getAllStockData();
+  }, []);
+
+  // Fetch all products for the dropdown
+  const getAllProducts = () => {
     api.get(`${import.meta.env.VITE_MAIN_URL}/products/`)
-      .then(res => {
-        // Map the response to match the format of initialStockItems
-        const mappedData = res.data.map(item => ({
+      .then((res) => {
+        const mappedData = res.data.map((item) => ({
           id: item.Pro_id,
           productName: item.product_name,
-          quantity: 0, // Assuming you want quantity as 0 initially
-          date: item.date.split("T")[0], // Format date if needed
-          type: item.product_type,
-          price: parseFloat(item.product_price), // Convert price to float
         }));
-        setStockItems(mappedData); // Set the mapped data
+        SetinitialStockItems(mappedData);
       })
-      .catch(error => {
+      .catch((error) => {
         console.log(error);
       });
   };
 
-  useEffect(() => {
-    getAll();
-  }, []);
-  const [stockItems, setStockItems] = useState(initialStockItems);
-  const [selectedProduct, setSelectedProduct] = useState("");
-  const [quantity, setQuantity] = useState("");
-  const [date, setDate] = useState("");
-  const [showAll, setShowAll] = useState(false);
-  const [showAddProductModal, setShowAddProductModal] = useState(false);
-  const [newProductName, setNewProductName] = useState("");
-  const [newProductType, setNewProductType] = useState("");
-  const [newProductPrice, setNewProductPrice] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  // Fetch all stock data for displaying in the table
+  const getAllStockData = () => {
+    api.get(`${import.meta.env.VITE_MAIN_URL}/stock/in/`)
+      .then((res) => {
+        setStockData(res.data); // Store all stock data in the state
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
 
-  const notify = (message) => toast(message);
+  // Handle stock submission
+  const handleAddStockIn = (e) => {
+    e.preventDefault();
+    const totalPrice = newStock.product_quantity * newStock.price_per_unit;
+    api.post(`${import.meta.env.VITE_MAIN_URL}/stock/in/`, {
+      ...newStock,
+      total_price: totalPrice,
+    })
+      .then(() => {
+        toast.success("Stock Added Successfully");
+        getAllStockData(); // Refresh the stock data
+        setShowAddProductModal(false);
+      })
+      .catch((error) => {
+        toast.error("Error Adding Stock");
+        console.log(error);
+      });
+  };
 
-  // Pagination calculations
-  const totalPages = Math.ceil(stockItems.length / itemsPerPage);
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const displayedStock = stockItems.slice(startIdx, startIdx + itemsPerPage);
+
+  // Handle pagination
+  const totalPages = Math.ceil(stockData.length / itemsPerPage); // Calculate total pages
+  const currentData = stockData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const nextPage = () => {
     if (currentPage < totalPages) {
@@ -61,136 +93,61 @@ const StockIn = ({ products, setProducts }) => {
     }
   };
 
-  const handleAddProduct = (e) => {
-    e.preventDefault();
-    if (newProductName && newProductType && newProductPrice) {
-      const newProduct = {
-        id: stockItems.length > 0 ? Math.max(...stockItems.map(item => item.id)) + 1 : 1,
-        productName: newProductName,
-        quantity: 0,
-        date: new Date().toISOString().split("T")[0],
-        type: newProductType,
-        price: parseFloat(newProductPrice),
-      };
-      setStockItems([...stockItems, newProduct]);
-      // Add to the Products table as well
-      setProducts([...products, newProduct]);
-      notify("Product added successfully!");
-      setShowAddProductModal(false);
-      resetNewProductForm();
-    } else {
-      notify("Please fill in all product details.");
-    }
-  };
-
-  const resetNewProductForm = () => {
-    setNewProductName("");
-    setNewProductType("");
-    setNewProductPrice("");
-  };
-
-  const handleAddStock = (e) => {
-    e.preventDefault();
-    const selectedProductDetails = stockItems.find(item => item.productName === selectedProduct);
-    if (selectedProductDetails && quantity && date) {
-      const updatedStockItems = stockItems.map(item => {
-        if (item.productName === selectedProduct) {
-          return { ...item, quantity: item.quantity + parseInt(quantity), date };
-        }
-        return item;
-      });
-      setStockItems(updatedStockItems);
-      notify("Stock added successfully!");
-      setQuantity("");
-      setDate("");
-      setSelectedProduct("");
-    } else {
-      notify("Please fill in all the details.");
-    }
+  // Sort by date
+  const handleSortByDate = () => {
+    const sortedData = [...stockData].sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      return sortByDate === "asc" ? dateA - dateB : dateB - dateA;
+    });
+    setStockData(sortedData);
+    setSortByDate(sortByDate === "asc" ? "desc" : "asc");
   };
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <ToastContainer />
       <h2 className="text-3xl font-bold mb-6">Stock in Dashboard</h2>
-
-      {/* Stock Form */}
-      <form className="mb-6" onSubmit={handleAddStock}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label className="block mb-1 font-medium">Select Product:</label>
-            <select
-              value={selectedProduct}
-              onChange={(e) => setSelectedProduct(e.target.value)}
-              className="border border-gray-300 p-2 rounded w-full"
-              required
-            >
-              <option value="">Select a product</option>
-              {stockItems.map((item) => (
-                <option key={item.id} value={item.productName}>
-                  {item.productName}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">Quantity:</label>
-            <input
-              type="number"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              className="border border-gray-300 p-2 rounded w-full"
-              placeholder="Enter quantity"
-              required
-              min="1"
-            />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">Date:</label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="border border-gray-300 p-2 rounded w-full"
-              required
-            />
-          </div>
-        </div>
-        <div className="flex justify-end mt-4">
-          <button
-            type="submit"
-            className="bg-blue-500 text-white px-6 py-2 rounded shadow hover:bg-blue-600 transition"
-          >
-            Add Stock
-          </button>
-
-        </div>
-      </form>
-
+      
+      {/* Add Product Button */}
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={() => setShowAddProductModal(true)}
+          className="bg-yellow-500 text-white px-6 py-2 rounded shadow hover:bg-yellow-600 transition"
+        >
+          Add Product
+        </button>
+      </div>
+      
       {/* Stock Table */}
       <div className="bg-white p-6 rounded shadow-md">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-2xl font-semibold">Stock Inventory</h3>
+          <button onClick={handleSortByDate} className="text-sm text-blue-500">
+            Sort by Date {sortByDate === "asc" ? "↓" : "↑"}
+          </button>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-300">
+          <table className="min-w-full bg-white">
             <thead>
-              <tr className="bg-gray-200">
-                <th className="border border-gray-300 px-4 py-2">Product</th>
-                <th className="border border-gray-300 px-4 py-2">Quantity</th>
-                <th className="border border-gray-300 px-4 py-2">Date</th>
-                <th className="border border-gray-300 px-4 py-2">Type</th>
-                <th className="border border-gray-300 px-4 py-2">Price</th>
+              <tr>
+                <th className="px-4 border py-2">ID</th>
+                <th className="px-4 border py-2">Product</th>
+                <th className="px-4 border py-2">Quantity</th>
+                <th className="px-4 border py-2">Price per Unit</th>
+                <th className="px-4 border py-2">Total Price</th>
+                <th className="px-4 border py-2">Date</th>
               </tr>
             </thead>
             <tbody>
-              {displayedStock.map((item) => (
-                <tr key={item.id} className="border-t">
-                  <td className="border border-gray-300 px-4 py-2">{item.productName}</td>
-                  <td className="border border-gray-300 px-4 py-2">{item.quantity}</td>
-                  <td className="border border-gray-300 px-4 py-2">{item.date}</td>
-                  <td className="border border-gray-300 px-4 py-2">{item.type}</td>
-                  <td className="border border-gray-300 px-4 py-2">Frw {item.price}</td>
+              {currentData.map((stock) => (
+                <tr key={stock.stock_id}>
+                  <td className="border px-4 py-2">{stock.stock_id}</td>
+                  <td className="border px-4 py-2">{stock.product_name}</td>
+                  <td className="border px-4 py-2">{stock.product_quantity}</td>
+                  <td className="border px-4 py-2">{stock.price_per_unit}</td>
+                  <td className="border px-4 py-2">{stock.total_price}</td>
+                  <td className="border px-4 py-2">{stock.date}</td>
                 </tr>
               ))}
             </tbody>
@@ -216,66 +173,67 @@ const StockIn = ({ products, setProducts }) => {
           </button>
         </div>
       </div>
-&nbsp;
-      
-      {/* Add Product Button */}
-      {/* <div className="flex justify-end mb-4">
-        <button
-          onClick={() => setShowAddProductModal(true)}
-          className="bg-yellow-500 text-white px-6 py-2 rounded shadow hover:bg-yellow-600 transition"
-        >
-          Add Product
-        </button>
-      </div> */}
 
       {/* Add Product Modal */}
       {showAddProductModal && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-8 rounded shadow-md w-11/12 md:w-1/3">
-            <h3 className="text-2xl font-semibold mb-6">Add new product</h3>
-            <form onSubmit={handleAddProduct}>
+            <h3 className="text-2xl font-semibold mb-6">Add new Stock In</h3>
+            <form onSubmit={handleAddStockIn}>
               <div className="mb-4">
-                <label className="block mb-1 font-medium">Product Name:</label>
-                <input
-                  type="text"
-                  value={newProductName}
-                  onChange={(e) => setNewProductName(e.target.value)}
+                <label className="block mb-1 font-medium">Product :</label>
+                <select
+                  value={newStock.product_id}
+                  onChange={(e) => setNewStock({ ...newStock, product_id: e.target.value })}
                   className="border border-gray-300 p-2 rounded w-full"
-                  placeholder="Enter product name"
+                  required
+                >
+                  <option value="">Choose Product</option>
+                  {initialStockItems.map((data) => (
+                    <option key={data.id} value={data.id}>
+                      {data.productName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-4">
+                <label className="block mb-1 font-medium">Quantity:</label>
+                <input
+                  type="number"
+                  value={newStock.product_quantity}
+                  onChange={(e) => setNewStock({ ...newStock, product_quantity: e.target.value })}
+                  className="border border-gray-300 p-2 rounded w-full"
+                  placeholder="Product quantity"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label className="block mb-1 font-medium">Type:</label>
+                <label className="block mb-1 font-medium">Price Per Unit:</label>
                 <input
-                  type="text"
-                  value={newProductType}
-                  onChange={(e) => setNewProductType(e.target.value)}
+                  type="number"
+                  value={newStock.price_per_unit}
+                  onChange={(e) => setNewStock({ ...newStock, price_per_unit: e.target.value })}
                   className="border border-gray-300 p-2 rounded w-full"
-                  placeholder="Enter product type"
+                  placeholder="Enter product price per unit"
                   required
                 />
               </div>
               <div className="mb-6">
-                <label className="block mb-1 font-medium">Price:</label>
+                <label className="block mb-1 font-medium">Date:</label>
                 <input
-                  type="number"
-                  value={newProductPrice}
-                  onChange={(e) => setNewProductPrice(e.target.value)}
+                  type="date"
+                  value={newStock.date}
+                  onChange={(e) => setNewStock({ ...newStock, date: e.target.value })}
                   className="border border-gray-300 p-2 rounded w-full"
-                  placeholder="Enter price"
                   required
-                  min="0.01"
-                  step="0.01"
                 />
               </div>
-              {/* Modal Action Buttons */}
               <div className="flex justify-end space-x-4">
                 <button
                   type="submit"
                   className="bg-green-500 text-white px-6 py-2 rounded shadow hover:bg-green-600 transition"
                 >
-                  Save Product
+                  Add Stock In
                 </button>
                 <button
                   type="button"
