@@ -6,6 +6,7 @@ const Transactions = () => {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState("cash");
+  const [date, setDate] = useState(""); // State for transaction date
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false); // State to manage modal visibility
   const itemsPerPage = 5; // Set the number of items to display per page
@@ -16,11 +17,13 @@ const Transactions = () => {
       description,
       amount: parseFloat(amount), // Ensure amount is a float
       type,
+      date, // Include date in the transaction
     };
     setTransactions([...transactions, newTransaction]);
     setDescription("");
     setAmount("");
     setType("cash");
+    setDate(""); // Clear date input after submission
     setIsModalOpen(false); // Close modal after adding transaction
   };
 
@@ -48,9 +51,9 @@ const Transactions = () => {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 relative min-h-screen">
+      <h2 className="text-xl font-bold mb-4">Transactions</h2>
       {/* Transactions Table */}
-      <h2 className="text-xl font-bold mt-6 mb-4">Transactions Table</h2>
       <table className="min-w-full table-auto border-collapse border border-gray-300">
         <thead>
           <tr>
@@ -58,6 +61,7 @@ const Transactions = () => {
             <th className="border border-gray-300 p-2">Description</th>
             <th className="border border-gray-300 p-2">Amount</th>
             <th className="border border-gray-300 p-2">Type</th>
+            <th className="border border-gray-300 p-2">Date</th>
           </tr>
         </thead>
         <tbody>
@@ -67,6 +71,7 @@ const Transactions = () => {
               <td className="border border-gray-300 text-center p-2">{transaction.description}</td>
               <td className="border border-gray-300 text-center p-2">Frw {transaction.amount}</td>
               <td className="border border-gray-300 text-center p-2 capitalize">{transaction.type}</td>
+              <td className="border border-gray-300 text-center p-2">{transaction.date}</td>
             </tr>
           ))}
         </tbody>
@@ -99,10 +104,10 @@ const Transactions = () => {
           Next
         </button>
       </div>
-      {/* Button to trigger the modal */}
-      <button
+            {/* Add Transaction Button at the bottom-right corner */}
+            <button
         onClick={() => setIsModalOpen(true)}
-        className="px-4 py-2 bg-blue-500 text-white rounded  justify-end hover:bg-blue-600"
+        className="bg-yellow-500 text-white px-6 py-2 rounded hover:bg-yellow-600 transition absolute right-2 mb-40 shadow-lg"
       >
         Add Transaction
       </button>
@@ -156,16 +161,30 @@ const Transactions = () => {
               </select>
             </div>
 
-            <div className="flex justify-between">
+            {/* Date input field */}
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2" htmlFor="date">
+                Date:
+              </label>
+              <input
+                type="date"
+                id="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded"
+              />
+            </div>
+
+            <div className="flex justify-left space-x-3">
               <button
                 onClick={handleAddTransaction}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="bg-green-500 text-white px-6 py-2 rounded shadow hover:bg-green-600 transition"
               >
-                Add Transaction
+                Confirm
               </button>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+                className="bg-red-500 text-white px-6 py-2 rounded shadow hover:bg-red-600 transition"
               >
                 Cancel
               </button>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Sidebar from "../components/SideBar"; // Ensure correct import path
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import HomeDash from "../components/dashboard/HomeDash";
 import StockIn from "../components/dashboard/StockIn";
 import StockOut from "../components/dashboard/StockOut"; // Import additional components
@@ -11,22 +11,32 @@ import Stock from "../components/dashboard/Stock";
 import Products from '../components/dashboard/Products';
 
 const Dashboard = () => {
-  // State management
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Sidebar toggle state
   const [showDropdown, setShowDropdown] = useState(false); // Dropdown menu state
   const [activeView, setActiveView] = useState(localStorage.getItem('viewmode')); // Active dashboard view state
 
+  const navigate = useNavigate(); // For navigation after logout
+
   // Toggle the visibility of the dropdown menu
   const toggleDropdown = () => setShowDropdown((prev) => !prev);
+
+  // Handle Logout
+  const handleLogout = () => {
+    // Clear the token from localStorage
+    localStorage.removeItem('Ozone_token');
+    
+    // Redirect to the login page
+    navigate('/login');
+  };
 
   // Render content based on the active view
   const renderContent = () => {
     switch (activeView) {
       case "overview":
         return <HomeDash />;
-        case "Products":
-          return <Products />;
-        case "stock":
+      case "Products":
+        return <Products />;
+      case "stock":
         return <Stock />;
       case "StockIn":
         return <StockIn />;
@@ -37,7 +47,7 @@ const Dashboard = () => {
       case "Balance":
         return <Balance />;
       case "Settings":
-        return <Settings />;
+        return <Settings />; // This will display the Settings component
       default:
         return <HomeDash />;
     }
@@ -72,18 +82,27 @@ const Dashboard = () => {
             {/* Dropdown Menu */}
             {showDropdown && (
               <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
-                <Link
-                  to="/Settings"
+                {/* Change the active view to "Settings" when clicked */}
+                <button
+                  onClick={() => {
+                    setActiveView("Settings");
+                    setShowDropdown(false); // Close the dropdown after clicking
+                  }}
                   className="block px-3 py-1.5 text-gray-800 font-bold hover:bg-blue-500 hover:text-white transition duration-300 ease-in-out text-sm"
                 >
                   Settings
-                </Link>
-                <Link
-                  to="/login"
+                </button>
+
+                {/* Logout button */}
+                <button
+                onClick={() => {
+                  setActiveView("Logout");
+                  setShowDropdown(false); // Close the dropdown after clicking
+                }}
                   className="block px-3 py-1.5 text-gray-800 font-bold hover:bg-red-500 hover:text-white transition duration-300 ease-in-out text-sm"
                 >
                   Logout
-                </Link>
+                </button>
               </div>
             )}
           </div>
@@ -96,7 +115,6 @@ const Dashboard = () => {
       </div>
     </div>
   );
-  
 };
 
 export default Dashboard;

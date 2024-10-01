@@ -107,13 +107,12 @@ const StockIn = () => {
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <ToastContainer />
-      <h2 className="text-3xl font-bold mb-6">Stock in Dashboard</h2>
+      <h2 className="text-xl font-bold mb-6">Stock In</h2>
       
       {/* Stock Table */}
       <div className="bg-white p-6 rounded shadow-md">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-2xl font-semibold">Stock Inventory</h3>
-          <button onClick={handleSortByDate} className="text-sm text-blue-500">
+          <button onClick={handleSortByDate} className="text-base text-blue-500">
             Sort by Date {sortByDate === "asc" ? "↓" : "↑"}
           </button>
         </div>

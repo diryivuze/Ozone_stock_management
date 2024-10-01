@@ -31,7 +31,7 @@ const Stock = () => {
 
   // Pagination States
   const [currentReportPage, setCurrentReportPage] = useState(1);
-  const reportsPerPage = 3;
+  const reportsPerPage = 5;
 
   // Date range filter for reports
   const handleDateChange = () => {
@@ -67,7 +67,7 @@ const Stock = () => {
 
   return (
     <div className="p-6 bg-gray-100">
-      <h2 className="text-3xl font-bold mb-4">Reports Dashboard</h2>
+      <h2 className="text-xl font-bold mb-4">Reports</h2>
 
       {/* Date Filter */}
       <div className="mb-4 flex">
@@ -91,7 +91,7 @@ const Stock = () => {
         </div>
         <button
           onClick={handleDateChange}
-          className="bg-blue-500 text-white px-3 py-1 rounded flex items-center"
+          className="bg-blue-500 text-white px-5 py-2 rounded flex items-center"
         >
           Apply
         </button>

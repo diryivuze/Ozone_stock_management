@@ -146,7 +146,7 @@ const StockOut = () => {
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <ToastContainer />
-      <h2 className="text-xl font-bold mb-6">Stock Out Dashboard</h2>
+      <h2 className="text-xl font-bold mb-6">Stock Out</h2>
 
       {/* Stock Out Modal */}
       {showStockOutModal && (
@@ -206,7 +206,7 @@ const StockOut = () => {
                 </>
               )}
        <div className="justify-end">         
-            <button type="submit" className="bg-green-500 text-white px-6 py-2 rounded shadow hover:bg-green-600 transition">
+            <button type="submit" className="bg-green-500 text-white px-6 py-2 rounded shadow space-x-6 hover:bg-green-600 transition">
                 Confirm
               </button>
               <button type="button" onClick={() => setShowStockOutModal(false)} className="bg-red-500 text-white px-6 py-2 rounded shadow hover:bg-red-600 transition ml-2">
@@ -351,7 +351,7 @@ const StockOut = () => {
       </div>
       <div className="flex justify-end mb-4">
         <button onClick={() => setShowStockOutModal(true)} className="bg-yellow-500 text-white px-6 py-2 rounded shadow hover:bg-yellow-600 transition">
-          Stock Out Item
+          Remove Stock
         </button>
       </div>
     </div>

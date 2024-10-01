@@ -2,14 +2,13 @@
 import React, { useState } from "react";
 
 const Balance = () => {
-  const [balances, setBalances] = useState([
-
-  ]);
+  const [balances, setBalances] = useState([]);
   const [stockType, setStockType] = useState("opening"); // Stock type: opening or closing
   const [date, setDate] = useState(""); // Date of the balance
   const [cashAmount, setCashAmount] = useState(""); // Cash balance
   const [momoAmount, setMomoAmount] = useState(""); // MoMo balance
   const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false); // State to manage modal visibility
   const itemsPerPage = 5; // Number of items to display per page
 
   const handleAddBalance = () => {
@@ -36,6 +35,7 @@ const Balance = () => {
     setDate("");
     setCashAmount("");
     setMomoAmount("");
+    setIsModalOpen(false); // Close modal after adding balance
   };
 
   // Calculate total pages
@@ -44,10 +44,7 @@ const Balance = () => {
   // Get current balances to display
   const indexOfLastBalance = currentPage * itemsPerPage;
   const indexOfFirstBalance = indexOfLastBalance - itemsPerPage;
-  const currentBalances = balances.slice(
-    indexOfFirstBalance,
-    indexOfLastBalance
-  );
+  const currentBalances = balances.slice(indexOfFirstBalance, indexOfLastBalance);
 
   const nextPage = () => {
     if (currentPage < totalPages) {
@@ -62,77 +59,89 @@ const Balance = () => {
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-3xl font-bold mb-4">Balance Dashboard</h2>
+    <div className="p-4 relative min-h-screen">
+      <h2 className="text-xl font-bold mb-4">Balance</h2>
+      {/* Modal for adding balance */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded shadow-lg max-w-md w-full">
+            <h2 className="text-2xl font-bold mb-4">Add New Balance</h2>
 
-      {/* Form to add balance */}
-      <div className="mb-6">
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="stockType">
-            Stock Type:
-          </label>
-          <select
-            id="stockType"
-            value={stockType}
-            onChange={(e) => setStockType(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded"
-          >
-            <option value="opening">Opening Stock</option>
-            <option value="closing">Closing Stock</option>
-          </select>
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2" htmlFor="stockType">
+                Stock Type:
+              </label>
+              <select
+                id="stockType"
+                value={stockType}
+                onChange={(e) => setStockType(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded"
+              >
+                <option value="opening">Opening Stock</option>
+                <option value="closing">Closing Stock</option>
+              </select>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2" htmlFor="date">
+                Date:
+              </label>
+              <input
+                type="date"
+                id="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2" htmlFor="cashAmount">
+                Cash Amount:
+              </label>
+              <input
+                type="number"
+                id="cashAmount"
+                value={cashAmount}
+                onChange={(e) => setCashAmount(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded"
+                placeholder="Enter cash amount"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2" htmlFor="momoAmount">
+                MoMo Amount:
+              </label>
+              <input
+                type="number"
+                id="momoAmount"
+                value={momoAmount}
+                onChange={(e) => setMomoAmount(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded"
+                placeholder="Enter MoMo amount"
+              />
+            </div>
+
+            <div className="flex justify-left space-x-3">
+              <button
+                onClick={handleAddBalance}
+                className="bg-green-500 text-white px-6 py-2 rounded shadow hover:bg-green-600 transition"
+              >
+                Confirm
+              </button>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="bg-red-500 text-white px-6 py-2 rounded shadow hover:bg-red-600 transition ml-2"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="date">
-            Date:
-          </label>
-          <input
-            type="date"
-            id="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="cashAmount">
-            Cash Amount:
-          </label>
-          <input
-            type="number"
-            id="cashAmount"
-            value={cashAmount}
-            onChange={(e) => setCashAmount(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded"
-            placeholder="Enter cash amount"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="momoAmount">
-            MoMo Amount:
-          </label>
-          <input
-            type="number"
-            id="momoAmount"
-            value={momoAmount}
-            onChange={(e) => setMomoAmount(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded"
-            placeholder="Enter MoMo amount"
-          />
-        </div>
-
-        <button
-          onClick={handleAddBalance}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Add Balance
-        </button>
-      </div>
+      )}
 
       {/* Balance Table */}
-      <h2 className="text-3xl font-bold mb-4 ">Balance Report</h2>
       <table className="min-w-full table-auto border-collapse border border-gray-300 text-center">
         <thead>
           <tr>
@@ -178,19 +187,33 @@ const Balance = () => {
       <div className="flex justify-center items-center mt-4">
         <button
           onClick={prevPage}
+          disabled={currentPage === 1}
           className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400 disabled:bg-gray-400"
         >
           Previous
         </button>
-        <span>&nbsp;&nbsp;
-         {currentPage} of {totalPages}
-         &nbsp;&nbsp;</span>
+        <span>
+          &nbsp;&nbsp;
+          {currentPage} of {totalPages}
+          &nbsp;&nbsp;
+        </span>
         <button
           onClick={nextPage}
+          disabled={currentPage === totalPages}
           className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400 disabled:bg-gray-400"
         >
           Next
         </button>
+      </div>
+      
+      {/* Add Balance Button */}
+      <div className="flex justify-end mb-4">
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="bg-yellow-500 text-white px-6 py-2 rounded shadow hover:bg-yellow-600 transition"
+      >
+        Add Balance
+      </button>
       </div>
     </div>
   );

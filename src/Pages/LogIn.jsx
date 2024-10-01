@@ -125,16 +125,6 @@ const LogIn = () => {
             <div className="text-right mt-4">
               <a href="/forgot-password" className="text-sm text-indigo-500 hover:underline">Forgot Password?</a>
             </div>
-
-            {/* Back to Home Button */}
-            <div className="text-center mt-8">
-              <a
-                href="/"
-                className="inline-block bg-gray-700 text-gray-300 py-2 px-4 rounded-lg hover:bg-gray-300 hover:text-gray-900 transition duration-300"
-              >
-                Back to Home
-              </a>
-            </div>
           </div>
         </div>
       </div>
