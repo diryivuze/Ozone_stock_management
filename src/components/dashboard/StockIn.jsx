@@ -109,16 +109,6 @@ const StockIn = () => {
       <ToastContainer />
       <h2 className="text-3xl font-bold mb-6">Stock in Dashboard</h2>
       
-      {/* Add Product Button */}
-      <div className="flex justify-end mb-4">
-        <button
-          onClick={() => setShowAddProductModal(true)}
-          className="bg-yellow-500 text-white px-6 py-2 rounded shadow hover:bg-yellow-600 transition"
-        >
-          Add Product
-        </button>
-      </div>
-      
       {/* Stock Table */}
       <div className="bg-white p-6 rounded shadow-md">
         <div className="flex justify-between items-center mb-4">
@@ -172,8 +162,17 @@ const StockIn = () => {
             Next
           </button>
         </div>
+        &nbsp;&nbsp;
+      {/* Add Product Button */}
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={() => setShowAddProductModal(true)}
+          className="bg-yellow-500 text-white px-6 py-2 rounded shadow hover:bg-yellow-600 transition"
+        >
+          Add Stock
+        </button>
       </div>
-
+      </div>
       {/* Add Product Modal */}
       {showAddProductModal && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">

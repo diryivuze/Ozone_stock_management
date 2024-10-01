@@ -7,6 +7,7 @@ const Transactions = () => {
   const [amount, setAmount] = useState("");
   const [type, setType] = useState("cash");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false); // State to manage modal visibility
   const itemsPerPage = 5; // Set the number of items to display per page
 
   const handleAddTransaction = () => {
@@ -20,6 +21,7 @@ const Transactions = () => {
     setDescription("");
     setAmount("");
     setType("cash");
+    setIsModalOpen(false); // Close modal after adding transaction
   };
 
   // Calculate total pages
@@ -47,63 +49,8 @@ const Transactions = () => {
 
   return (
     <div className="p-4">
-      <h2 className="text-3xl font-bold mb-4">Transactions Dashboard</h2>
-
-      {/* Form to add transaction */}
-      <div className="mb-6">
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="description">
-            Description:
-          </label>
-          <input
-            type="text"
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded"
-            placeholder="Enter transaction description"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="amount">
-            Amount Sent:
-          </label>
-          <input
-            type="number"
-            id="amount"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded"
-            placeholder="Enter amount sent"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="type">
-            Type of Money:
-          </label>
-          <select
-            id="type"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded"
-          >
-            <option value="cash">Cash</option>
-            <option value="momo">MoMo</option>
-          </select>
-        </div>
-
-        <button
-          onClick={handleAddTransaction}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Add Transaction
-        </button>
-      </div>
-
       {/* Transactions Table */}
-      <h2 className="text-2xl font-bold mb-4">Transactions Table</h2>
+      <h2 className="text-xl font-bold mt-6 mb-4">Transactions Table</h2>
       <table className="min-w-full table-auto border-collapse border border-gray-300">
         <thead>
           <tr>
@@ -139,9 +86,11 @@ const Transactions = () => {
         >
           Previous
         </button>
-        <span>&nbsp;&nbsp;
+        <span>
+          &nbsp;&nbsp;
           {currentPage} of {totalPages}
-          &nbsp;&nbsp;</span>
+          &nbsp;&nbsp;
+        </span>
         <button
           onClick={nextPage}
           disabled={currentPage === totalPages}
@@ -150,6 +99,80 @@ const Transactions = () => {
           Next
         </button>
       </div>
+      {/* Button to trigger the modal */}
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="px-4 py-2 bg-blue-500 text-white rounded  justify-end hover:bg-blue-600"
+      >
+        Add Transaction
+      </button>
+
+      {/* Modal for adding transaction */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded shadow-lg max-w-md w-full">
+            <h2 className="text-2xl font-bold mb-4">Add New Transaction</h2>
+
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2" htmlFor="description">
+                Description:
+              </label>
+              <input
+                type="text"
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded"
+                placeholder="Enter transaction description"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2" htmlFor="amount">
+                Amount Sent:
+              </label>
+              <input
+                type="number"
+                id="amount"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded"
+                placeholder="Enter amount sent"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2" htmlFor="type">
+                Type of Money:
+              </label>
+              <select
+                id="type"
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded"
+              >
+                <option value="cash">Cash</option>
+                <option value="momo">MoMo</option>
+              </select>
+            </div>
+
+            <div className="flex justify-between">
+              <button
+                onClick={handleAddTransaction}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Add Transaction
+              </button>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

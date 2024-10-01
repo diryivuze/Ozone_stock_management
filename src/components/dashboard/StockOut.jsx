@@ -22,6 +22,7 @@ const StockOut = () => {
   const [selectedItemData, setSelectedItemData] = useState({ pricePerUnit: 0, productName: '' });
   const [quantity, setQuantity] = useState(1);
   const [date, setDate] = useState("");
+  const [showStockOutModal, setShowStockOutModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [productToEdit, setProductToEdit] = useState(null);
   const [updatedProductName, setUpdatedProductName] = useState("");
@@ -48,6 +49,7 @@ const StockOut = () => {
         }).filter(item => item.quantity > 0);
         setStockItems(updatedStockItems);
         notify(`Stocked out ${quantity} of ${stockOutItem.productName} on ${date}`);
+        setShowStockOutModal(false); // Close modal after stock out
       } else {
         notify("Please select a valid item.");
       }
@@ -56,6 +58,7 @@ const StockOut = () => {
     }
   };
 
+  // Handle Delete Product with confirmation
   const handleDeleteProduct = (id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this product?");
     if (confirmDelete) {
@@ -143,124 +146,83 @@ const StockOut = () => {
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <ToastContainer />
-      <h2 className="text-3xl font-bold mb-6">Stock Out Dashboard</h2>
+      <h2 className="text-xl font-bold mb-6">Stock Out Dashboard</h2>
 
-      <form onSubmit={handleStockOut} className="bg-white p-6 rounded shadow-md mb-6">
-        <h3 className="text-2xl font-semibold mb-4">Stock Out Item</h3>
-        
-        <div className="mb-4">
-          <label className="block mb-1 font-medium">Select Item:</label>
-          <select
-            value={selectedItem}
-            onChange={handleItemChange}
-            className="border border-gray-300 p-2 rounded w-full"
-            required
-          >
-            <option value="">-- Select an item --</option>
-            {stockItems.map(item => (
-              <option key={item.id} value={item.id}>
-                {item.productName}
-              </option>
-            ))}
-          </select>
-        </div>
+      {/* Stock Out Modal */}
+      {showStockOutModal && (
+        <div className="fixed inset-0 flex mt-3 items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-md w-1/3">
+            <h3 className="text-2xl font-semibold mb-4">Stock Out Item</h3>
+            <form onSubmit={handleStockOut}>
+              <div className="mb-4">
+                <label className="block mb-1 font-medium">Select Item:</label>
+                <select
+                  value={selectedItem}
+                  onChange={handleItemChange}
+                  className="border border-gray-300 p-2 rounded w-full"
+                  required
+                >
+                  <option value="">-- Select an item --</option>
+                  {stockItems.map(item => (
+                    <option key={item.id} value={item.id}>
+                      {item.productName}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-        {selectedItemData && (
-          <>
-            <div className="mb-4">
-              <label className="block mb-1 font-medium">Price Per Unit:</label>
-              <input
-                type="text"
-                value={`Frw ${selectedItemData.pricePerUnit}`}
-                readOnly
-                className="border border-gray-300 p-2 rounded w-full bg-gray-200"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block mb-1 font-medium">Quantity:</label>
-              <input
-                type="number"
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-                className="border border-gray-300 p-2 rounded w-full"
-                min="1"
-                required
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block mb-1 font-medium">Date:</label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="border border-gray-300 p-2 rounded w-full"
-                required
-              />
-            </div>
-
+              {selectedItemData && (
+                <>
+                  <div className="mb-4">
+                    <label className="block mb-1 font-medium">Price Per Unit:</label>
+                    <input
+                      type="text"
+                      value={selectedItemData.pricePerUnit}
+                      readOnly
+                      className="border border-gray-300 p-2 rounded w-full bg-gray-100"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block mb-1 font-medium">Quantity:</label>
+                    <input
+                      type="number"
+                      value={quantity}
+                      onChange={(e) => setQuantity(e.target.value)}
+                      className="border border-gray-300 p-2 rounded w-full"
+                      min="1"
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block mb-1 font-medium">Date:</label>
+                    <input
+                      type="date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="border border-gray-300 p-2 rounded w-full"
+                      required
+                    />
+                  </div>
+                </>
+              )}
+       <div className="justify-end">         
             <button type="submit" className="bg-green-500 text-white px-6 py-2 rounded shadow hover:bg-green-600 transition">
-              Stock Out
-            </button>
-          </>
-        )}
-      </form>
-
-      <h3 className="text-2xl font-semibold mb-4">Current Stock Items</h3>
-
-      <table className="min-w-full bg-white rounded shadow">
-        <thead>
-          <tr>
-            <th className="py-2 px-4 border-b">Product Name</th>
-            <th className="py-2 px-4 border-b">Quantity</th>
-            <th className="py-2 px-4 border-b">Price</th>
-            <th className="py-2 px-4 border-b">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {displayedStock.map(item => (
-            <tr key={item.id}>
-              <td className="py-2 text-center px-4 border-b">{item.productName}</td>
-              <td className="py-2 text-center px-4 border-b">{item.quantity}</td>
-              <td className="py-2 text-center px-4 border-b">Frw {item.pricePerUnit}</td>
-              <td className="py-2 text-center px-4 border-b flex space-x-2">
-                <button onClick={() => handleEditProduct(item)} className="text-blue-500 justfy-cent ">
-                  <AiFillEdit />
-                </button>
-                <button onClick={() => handleDeleteProduct(item.id)} className="text-red-500 justfy-cent ">
-                  <AiFillDelete />
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-           {/* Pagination Controls */}
-           <div className="flex justify-center items-center mt-4">
-          <button
-            onClick={prevPage}
-            disabled={currentPage === 1}
-            className={`mx-1 px-3 py-1 rounded ${currentPage === 1 ? "bg-gray-300" : "bg-gray-200 hover:bg-gray-400"}`}
-          >
-            Previous
-          </button>
-          <span className="mx-2">{currentPage} of {totalPages}</span>
-          <button
-            onClick={nextPage}
-            disabled={currentPage === totalPages}
-            className={`mx-1 px-3 py-1 rounded ${currentPage === totalPages ? "bg-gray-300" : "bg-gray-200 hover:bg-gray-400"}`}
-          >
-            Next
-          </button>
+                Confirm
+              </button>
+              <button type="button" onClick={() => setShowStockOutModal(false)} className="bg-red-500 text-white px-6 py-2 rounded shadow hover:bg-red-600 transition ml-2">
+                Cancel
+              </button>
+              </div>
+            </form>
+          </div>
         </div>
+      )}
 
       {/* Edit Modal */}
       {showEditModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow-md w-1/3">
-            <h3 className="text-xl font-semibold mb-4">Edit Product</h3>
+            <h3 className="text-2xl font-semibold mb-4">Edit Product</h3>
             <form onSubmit={saveEditedProduct}>
               <div className="mb-4">
                 <label className="block mb-1 font-medium">Product Name:</label>
@@ -277,20 +239,19 @@ const StockOut = () => {
                 <input
                   type="number"
                   value={updatedQuantity}
-                  onChange={(e) => setUpdatedQuantity(Math.max(0, Number(e.target.value)))}
+                  onChange={(e) => setUpdatedQuantity(e.target.value)}
                   className="border border-gray-300 p-2 rounded w-full"
                   min="0"
                   required
                 />
               </div>
-              <div className="flex justify-between">
-                <button type="button" onClick={() => setShowEditModal(false)} className="bg-gray-400 text-white px-4 py-2 rounded">
-                  Cancel
-                </button>
-                <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-                  Save Changes
-                </button>
-              </div>
+
+              <button type="submit" className="bg-blue-500 text-white px-6 py-2 rounded shadow hover:bg-blue-600 transition">
+                Save Changes
+              </button>
+              <button type="button" onClick={() => setShowEditModal(false)} className="bg-red-500 text-white px-6 py-2 rounded shadow hover:bg-red-600 transition ml-2">
+                Cancel
+              </button>
             </form>
           </div>
         </div>
@@ -300,7 +261,7 @@ const StockOut = () => {
       {showAddProductModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow-md w-1/3">
-            <h3 className="text-xl font-semibold mb-4">Add Product</h3>
+            <h3 className="text-2xl font-semibold mb-4">Add Product</h3>
             <form onSubmit={handleAddProduct}>
               <div className="mb-4">
                 <label className="block mb-1 font-medium">Product Name:</label>
@@ -313,7 +274,7 @@ const StockOut = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block mb-1 font-medium">Type:</label>
+                <label className="block mb-1 font-medium">Product Type:</label>
                 <input
                   type="text"
                   value={newProductType}
@@ -323,37 +284,76 @@ const StockOut = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block mb-1 font-medium">Price:</label>
+                <label className="block mb-1 font-medium">Price Per Unit:</label>
                 <input
                   type="number"
                   value={newProductPrice}
-                  onChange={(e) => setNewProductPrice(Math.max(0, Number(e.target.value)))}
+                  onChange={(e) => setNewProductPrice(e.target.value)}
                   className="border border-gray-300 p-2 rounded w-full"
-                  min="0"
                   required
                 />
               </div>
-              <div className="flex justify-center space-x-6">
-              <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">
-                  Save Product
-                </button>
-                <button type="button" onClick={() => setShowAddProductModal(false)} className="bg-red-500 text-white px-4 py-2 rounded">
-                  Cancel
-                </button>
-              </div>
+
+              <button type="submit" className="bg-green-500 text-white px-6 py-2 rounded shadow hover:bg-green-600 transition">
+                Add Product
+              </button>
+              <button type="button" onClick={() => setShowAddProductModal(false)} className="bg-red-500 text-white px-6 py-2 rounded shadow hover:bg-red-600 transition ml-2">
+                Cancel
+              </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* <div className="flex justify-end mb-4 mt-7">
+      {/* Stock Items Table */}
+      <table className="min-w-full bg-white border border-gray-300 mt-6">
+        <thead>
+          <tr className="bg-gray-200">
+            <th className="p-4 text-left">Product Name</th>
+            <th className="p-4 text-left">Quantity</th>
+            <th className="p-4 text-left">Date Modified</th>
+            <th className="p-4 text-left">Price Per Unit</th>
+            <th className="p-4 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {displayedStock.map(item => (
+            <tr key={item.id}>
+              <td className="p-4 border">{item.productName}</td>
+              <td className="p-4 border">{item.quantity}</td>
+              <td className="p-4 border">{item.dateModified}</td>
+              <td className="p-4 border">{item.pricePerUnit}</td>
+              <td className="p-4 border">
+                <AiFillEdit className="inline cursor-pointer text-blue-500" onClick={() => handleEditProduct(item)} />
+                <AiFillDelete className="inline ml-4 cursor-pointer text-red-500" onClick={() => handleDeleteProduct(item.id)} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+ {/* Pagination Controls */}
+ <div className="flex justify-center mt-4">
         <button
-          onClick={() => setShowAddProductModal(true)}
-          className="bg-yellow-500 text-white px-6 py-2 rounded shadow hover:bg-yellow-600 transition"
+          onClick={prevPage}
+          disabled={currentPage === 1}
+          className={`mx-1 px-3 py-1 rounded ${currentPage === 1 ? "bg-gray-300" : "bg-gray-200 hover:bg-gray-400"}`}
         >
-          Add Product
+          Previous
         </button>
-      </div> */}
+        <span className="px-4 py-2 text-gray-700">{`${currentPage} of ${totalPages}`}</span>
+        <button
+          onClick={nextPage}
+          disabled={currentPage === totalPages}
+          className={`mx-1 px-3 py-1 rounded ${currentPage === totalPages ? "bg-gray-300" : "bg-gray-200 hover:bg-gray-400"}`}
+        >
+          Next
+        </button>
+      </div>
+      <div className="flex justify-end mb-4">
+        <button onClick={() => setShowStockOutModal(true)} className="bg-yellow-500 text-white px-6 py-2 rounded shadow hover:bg-yellow-600 transition">
+          Stock Out Item
+        </button>
+      </div>
     </div>
   );
 };

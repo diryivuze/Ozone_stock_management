@@ -223,7 +223,7 @@ const Products = () => {
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
       <ToastContainer />
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">All Products</h1>
+      <h1 className="text-xl font-bold text-gray-800 mb-6">All Products</h1>
 
       {/* Product Table */}
       <table className="w-full text-center table-auto">
