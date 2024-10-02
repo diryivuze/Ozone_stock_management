@@ -109,16 +109,16 @@ const StockOut = () => {
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white">
             <thead>
-              <tr>
-                <th className="px-4 border py-2">ID</th>
-                <th className="px-4 border py-2">Product</th>
-                <th className="px-4 border py-2">Quantity</th>
-                <th className="px-4 border py-2">Price per Unit</th>
-                <th className="px-4 border py-2">Total Price</th>
-                <th className="px-4 border py-2">Date</th>
-                <th className="px-4 border py-2">Type</th>
-                <th className="px-4 border py-2">Profit Status</th>
-                <th className="px-4 border py-2">Expand</th>
+              <tr className="bg-blue-100">
+                <th className="px-4 py-2">ID</th>
+                <th className="px-4 py-2">Product</th>
+                <th className="px-4 py-2">Quantity</th>
+                <th className="px-4 py-2">Price per Unit</th>
+                <th className="px-4 py-2">Total Price</th>
+                <th className="px-4 py-2">Date</th>
+                <th className="px-4 py-2">Type</th>
+                <th className="px-4 py-2">Profit Status</th>
+                <th className="px-4 py-2">Expand</th>
               </tr>
             </thead>
             <tbody>
@@ -166,15 +166,15 @@ const StockOut = () => {
                           className="cursor-pointer hover:bg-gray-100 transition"
                           onClick={() => handleRowClick(item)}
                         >
-                          <td className="border px-4 py-2">{item.stock_id}</td>
-                          <td className="border px-4 py-2">{item.product_name}</td>
-                          <td className="border px-4 py-2">{item.product_quantity}</td>
-                          <td className="border px-4 py-2">{item.price_per_unit}</td>
-                          <td className="border px-4 py-2">{item.total_price}</td>
-                          <td className="border px-4 py-2">{item.date}</td>
-                          <td className="border px-4 py-2">{item.tra_type}</td>
+                          <td className=" px-4 py-2">{item.stock_id}</td>
+                          <td className=" px-4 py-2">{item.product_name}</td>
+                          <td className=" px-4 py-2">{item.product_quantity}</td>
+                          <td className=" px-4 py-2">{item.price_per_unit}</td>
+                          <td className=" px-4 py-2">{item.total_price}</td>
+                          <td className=" px-4 py-2">{item.date}</td>
+                          <td className=" px-4 py-2">{item.tra_type}</td>
                           <td
-                            className={`border px-4 py-2 ${item.profit_status === "profit"
+                            className={` px-4 py-2 ${item.profit_status === "profit"
                                 ? "text-green-500"
                                 : item.profit_status === "loss"
                                   ? "text-red-500"
@@ -183,7 +183,7 @@ const StockOut = () => {
                           >
                             {item.profit_status}
                           </td>
-                          <td className="border px-4 py-2"></td>
+                          <td className=" px-4 py-2"></td>
                         </tr>
                       ))}
                   </React.Fragment>
