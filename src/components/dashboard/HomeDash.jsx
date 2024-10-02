@@ -1,292 +1,249 @@
-import React, { useEffect, useState } from "react";
-import { FaMoneyBillWave, FaCashRegister, FaChartLine } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import { FaMoneyBill, FaArrowRight, FaArrowLeft } from "react-icons/fa";
+import { AiFillCaretDown, AiFillCaretUp } from "react-icons/ai";
+import "react-toastify/dist/ReactToastify.css";
+import { publicAxios } from "../tokenGetter/api";
 
-const HomeDash = () => {
-  const [showModal, setShowModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+const StockOut = () => {
+  const api = publicAxios();
 
-  // State for financial values
-  const [todaysEarnings, setTodaysEarnings] = useState({ momo: 0, cash: 0 });
-  const [yesterdaysEarnings, setYesterdaysEarnings] = useState({
-    momo: 0,
-    cash: 0,
-  });
-  const [totalEarnings, setTotalEarnings] = useState({ momo: 0, cash: 0 });
+  const [stockData, setStockData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5; // Number of rows per page
+  const [selectedStock, setSelectedStock] = useState(null); // For modal details
+  const [expandedProducts, setExpandedProducts] = useState({}); // Track collapsed/expanded rows
 
   useEffect(() => {
-    const fetchData = () => {
-      setTimeout(() => {
-        setTodaysEarnings({ momo: 2000, cash: 1500 });
-        setYesterdaysEarnings({ momo: 1800, cash: 1200 });
-        setTotalEarnings({ momo: 5000, cash: 2500 });
-      }, 1000);
-    };
-
-    fetchData();
+    getStockOutData();
   }, []);
 
-  const handleShowModal = (product) => {
-    setSelectedProduct(product);
-    setShowModal(true);
+  const getStockOutData = () => {
+    api
+      .post(`${import.meta.env.VITE_MAIN_URL}/stock/out/byDate`)
+      .then((res) => {
+        setStockData(res.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
-  const handleCloseModal = () => setShowModal(false);
+  // Handle pagination
+  const totalPages = Math.ceil(stockData.length / itemsPerPage);
+  const nextPage = () => setCurrentPage((prev) => (prev < totalPages ? prev + 1 : prev));
+  const prevPage = () => setCurrentPage((prev) => (prev > 1 ? prev - 1 : prev));
 
-  const products = [
-    {
-      no: 1,
-      detail: "Donuts",
-      quantity: 50,
-      price: 100,
-      date: "2024-09-16",
-      status: "stockout",
-    },
-    {
-      no: 2,
-      detail: "Cake",
-      quantity: 30,
-      price: 100,
-      date: "2024-09-15",
-      status: "stockin",
-    },
-    {
-      no: 3,
-      detail: "Fanta (small)",
-      quantity: 50,
-      price: 1000,
-      date: "2024-09-15",
-      status: "stockout",
-    },
-    {
-      no: 4,
-      detail: "Capati",
-      quantity: 10,
-      price: 200,
-      date: "2024-09-15",
-      status: "stockout",
-    },
-    {
-      no: 5,
-      detail: "Meat Samosa",
-      quantity: 5,
-      price: 300,
-      date: "2024-09-14",
-      status: "stockout",
-    },
-    {
-      no: 6,
-      detail: "Pizza",
-      quantity: 2,
-      price: 500,
-      date: "2024-09-14",
-      status: "stockin",
-    },
-    {
-      no: 7,
-      detail: "Potato Samosa",
-      quantity: 20,
-      price: 200,
-      date: "2024-09-13",
-      status: "stockout",
-    },
-    {
-      no: 8,
-      detail: "Inyange Juice",
-      quantity: 8,
-      price: 1000,
-      date: "2024-09-12",
-      status: "stockout",
-    },
-  ];
-
-  // Pagination State
-  const itemsPerPage = 5;
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(products.length / itemsPerPage);
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
+  // Group data by product name
+  const groupStockByProduct = () => {
+    return stockData.reduce((acc, item) => {
+      const { product_name } = item;
+      if (!acc[product_name]) {
+        acc[product_name] = { total: 0, items: [] };
+      }
+      acc[product_name].total += Number(item.total_price);
+      acc[product_name].items.push(item);
+      return acc;
+    }, {});
   };
 
-  const getPaginatedProducts = () => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return products.slice(startIndex, startIndex + itemsPerPage);
+  const groupedStock = groupStockByProduct();
+
+  // Handle row click to show more details in a modal
+  const handleRowClick = (stock) => {
+    setSelectedStock(stock);
   };
 
-  const paginatedProducts = getPaginatedProducts();
+  const toggleProductCollapse = (productName) => {
+    setExpandedProducts((prev) => ({
+      ...prev,
+      [productName]: !prev[productName],
+    }));
+  };
 
-  const totalAmount = paginatedProducts.reduce(
-    (sum, product) => sum + product.quantity * product.price,
-    0
-  );
+  const closeModal = () => {
+    setSelectedStock(null);
+  };
 
   return (
-    <>
-      <div className="p-6 w-full bg-gray-100 min-h-screen">
-        <h2 className="text-xl font-bold mb-6 text-blue-900">
-          Dashboard Overview
-        </h2>
+    <div className="p-6 bg-gray-100 min-h-screen">
+      <ToastContainer />
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-3xl font-bold">Stock Out Dashboard</h2>
+        <a href="/view-all-details" className="text-blue-500 hover:underline">
+          View All in Details
+        </a>
+      </div>
 
-        {/* Financial Cards Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 shadow-md rounded-lg flex items-center justify-between">
-            <div>
-              <h3 className="text-l font-semibold text-teal-600">
-                Today's Earnings
-              </h3>
-              <p className="text-lg font-medium text-gray-700">
-                MoMo: Frw {todaysEarnings.momo}
-              </p>
-              <p className="text-lg font-medium text-gray-700">
-                Cash: Frw {todaysEarnings.cash}
-              </p>
-            </div>
-            <FaMoneyBillWave size={24} className="text-teal-500" />
-          </div>
-          <div className="bg-white p-6 shadow-md rounded-lg flex items-center justify-between">
-            <div>
-              <h3 className="text-l font-semibold text-green-600">
-                Yesterday's Earnings
-              </h3>
-              <p className="text-lg font-medium text-gray-700">
-                MoMo: Frw {yesterdaysEarnings.momo}
-              </p>
-              <p className="text-lg font-medium text-gray-700">
-                Cash: Frw {yesterdaysEarnings.cash}
-              </p>
-            </div>
-            <FaCashRegister size={24} className="text-green-600" />
-          </div>
-          <div className="bg-white p-6 shadow-md rounded-lg flex items-center justify-between">
-            <div>
-              <h3 className="text-l font-semibold text-orange-700">
-                Total Earnings
-              </h3>
-              <p className="text-lg font-medium text-gray-700">
-                MoMo: Frw {totalEarnings.momo}
-              </p>
-              <p className="text-lg font-medium text-gray-700">
-                Cash: Frw {totalEarnings.cash}
-              </p>
-            </div>
-            <FaChartLine size={24} className="text-orange-700" />
+      {/* Responsive Boxes */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-white p-4 rounded shadow-md flex items-center">
+          <FaMoneyBill className="text-green-500 text-3xl mr-4" />
+          <div>
+            <h4 className="text-lg font-semibold">Today's Earnings</h4>
+            <p>MoMo: Frw 2000</p>
+            <p>Cash: Frw 1500</p>
           </div>
         </div>
+        <div className="bg-white p-4 rounded shadow-md flex items-center">
+          <FaMoneyBill className="text-yellow-500 text-3xl mr-4" />
+          <div>
+            <h4 className="text-lg font-semibold">Yesterday's Earnings</h4>
+            <p>MoMo: Frw 1800</p>
+            <p>Cash: Frw 1200</p>
+          </div>
+        </div>
+        <div className="bg-white p-4 rounded shadow-md flex items-center">
+          <FaMoneyBill className="text-blue-500 text-3xl mr-4" />
+          <div>
+            <h4 className="text-lg font-semibold">Total Earnings</h4>
+            <p>MoMo: Frw 5000</p>
+            <p>Cash: Frw 2500</p>
+          </div>
+        </div>
+      </div>
 
-        {/* Recent Stock Section */}
-        <div className="bg-white p-6 shadow-md rounded-lg mb-8">
-          <h4 className="text-l font-semibold text-gray-800 mb-4">
-            Recent Stock Out
-          </h4>
-          <table className="min-w-full bg-white border border-gray-200 text-sm">
+      {/* Stock Table */}
+      <div className="bg-white p-6 rounded shadow-md">
+        <h3 className="text-2xl font-semibold mb-4">Stock Out Inventory</h3>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white">
             <thead>
-              <tr className="text-left border-b bg-gray-50">
-                <th className="py-2 px-4 text-gray-600">Transaction ID</th>
-                <th className="py-2 px-4 text-gray-600">Product Name</th>
-                <th className="py-2 px-4 text-gray-600">Quantity</th>
-                <th className="py-2 px-4 text-gray-600 hidden md:table-cell">
-                  Remaining Quantity
-                </th>
-                <th className="py-2 px-4 text-gray-600 hidden md:table-cell">
-                  Selling Price (Unit)
-                </th>
-                <th className="py-2 px-4 text-gray-600 hidden md:table-cell">
-                  Status
-                </th>
-                <th className="py-2 px-4 text-gray-600">Total Amount</th>
+              <tr>
+                <th className="px-4 border py-2">ID</th>
+                <th className="px-4 border py-2">Product</th>
+                <th className="px-4 border py-2">Quantity</th>
+                <th className="px-4 border py-2">Price per Unit</th>
+                <th className="px-4 border py-2">Total Price</th>
+                <th className="px-4 border py-2">Date</th>
+                <th className="px-4 border py-2">Type</th>
+                <th className="px-4 border py-2">Profit Status</th>
+                <th className="px-4 border py-2">Expand</th>
               </tr>
             </thead>
             <tbody>
-              {paginatedProducts.map((product) => (
-                <tr
-                  key={product.no}
-                  className="border-b hover:bg-gray-100 cursor-pointer"
-                  onClick={() => handleShowModal(product)}
-                >
-                  <td className="py-2 px-4 text-gray-800">#{product.no}</td>
-                  <td className="py-2 px-4 text-gray-800">{product.detail}</td>
-                  <td className="py-2 px-4 text-gray-800">
-                    {product.quantity}
-                  </td>
-                  <td className="py-2 px-4 text-gray-800 hidden md:table-cell">
-                    30
-                  </td>
-                  <td className="py-2 px-4 text-gray-800 hidden md:table-cell">
-                    Frw {product.price}
-                  </td>
-                  <td className="py-2 px-4 hidden md:table-cell">
-                    {product.status === "stockin" ? (
-                      <span className="p-1 text-green-500 font-semibold">
-                        Stock In
-                      </span>
-                    ) : (
-                      <span className="p-1 text-red-500 font-semibold">
-                        Stock Out
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-2 px-4 text-gray-800">
-                    Frw {product.quantity * product.price}
-                  </td>
-                </tr>
-              ))}
-              {/* Total Amount Row */}
-              <tr className="font-bold text-gray-800">
-                <td colSpan="6" className="py-2 px-4">
-                  Total Amount:
-                </td>
-                <td className="py-2 px-4">Frw {totalAmount}</td>
-              </tr>
+              {Object.keys(groupedStock)
+                .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                .map((productName) => (
+                  <React.Fragment key={productName}>
+                    {/* Main Row for Totals */}
+                    <tr className="bg-blue-50">
+                      <td className="px-4 py-2 text-[#363579] font-bold">#H{groupedStock[productName].items[0].stock_id}P</td>
+                      <td className="px-4 py-2 text-[#363579] font-bold">{productName}</td>
+                      <td className="px-4 py-2 text-[#363579] font-bold">
+                        {groupedStock[productName].items.reduce((sum, item) => sum + Number(item.product_quantity), 0)}
+                      </td>
+                      <td className="px-4 py-2 text-[#363579] font-bold">
+                        {groupedStock[productName].items.reduce((sum, item) => sum + Number(item.price_per_unit), 0)}
+                      </td>
+                      <td className="px-4 py-2 text-[#363579] font-bold">
+                        {groupedStock[productName].total}
+                      </td>
+                      <td className="px-4 py-2 text-[#363579] font-bold">{groupedStock[productName].items[0].date}</td>
+                      <td className="px-4 py-2 text-[#363579] font-bold">{groupedStock[productName].items[0].tra_type}</td>
+                      <td
+                        className={`px-4 py-2 text-[#363579] font-bold ${groupedStock[productName].items[0].profit_status === "profit"
+                            ? "text-green-500"
+                            : groupedStock[productName].items[0].profit_status === "loss"
+                              ? "text-red-500"
+                              : "text-yellow-500"
+                          }`}
+                      >
+                        {groupedStock[productName].items[0].profit_status}
+                      </td>
+                      <td className="px-4 py-2 text-[#363579] font-bold">
+                        <button onClick={() => toggleProductCollapse(productName)}>
+                          {expandedProducts[productName] ? <AiFillCaretUp /> : <AiFillCaretDown />}
+                        </button>
+                      </td>
+                    </tr>
+
+                    {/* Collapsible Rows */}
+                    {expandedProducts[productName] &&
+                      groupedStock[productName].items.map((item, index) => (
+                        <tr
+                          key={index}
+                          className="cursor-pointer hover:bg-gray-100 transition"
+                          onClick={() => handleRowClick(item)}
+                        >
+                          <td className="border px-4 py-2">{item.stock_id}</td>
+                          <td className="border px-4 py-2">{item.product_name}</td>
+                          <td className="border px-4 py-2">{item.product_quantity}</td>
+                          <td className="border px-4 py-2">{item.price_per_unit}</td>
+                          <td className="border px-4 py-2">{item.total_price}</td>
+                          <td className="border px-4 py-2">{item.date}</td>
+                          <td className="border px-4 py-2">{item.tra_type}</td>
+                          <td
+                            className={`border px-4 py-2 ${item.profit_status === "profit"
+                                ? "text-green-500"
+                                : item.profit_status === "loss"
+                                  ? "text-red-500"
+                                  : "text-yellow-500"
+                              }`}
+                          >
+                            {item.profit_status}
+                          </td>
+                          <td className="border px-4 py-2"></td>
+                        </tr>
+                      ))}
+                  </React.Fragment>
+                ))}
             </tbody>
           </table>
-          {/* Pagination Controls */}
-          <div className="flex justify-center items-center mt-4">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400 disabled:bg-gray-400"
-            >
-              Previous
-            </button>
-            <div>
-              &nbsp;&nbsp;{currentPage} of {totalPages}&nbsp;&nbsp;
-            </div>
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400 disabled:bg-gray-400"
-            >
-              Next
-            </button>
-          </div>
         </div>
 
-        {/* Modal for Product Details */}
-        {showModal && selectedProduct && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-6 rounded-lg shadow-md w-1/3">
-              <h3 className="text-lg font-semibold mb-4">Product Details</h3>
-              <p className="mb-4">
-                <strong>Product:</strong> {selectedProduct.detail}
-              </p>
-              <p className="mb-4">
-                <strong>Quantity:</strong> {selectedProduct.quantity}
-              </p>
-              <p className="mb-4">
-                <strong>Price per unit:</strong> Frw {selectedProduct.price}
-              </p>
+        {/* Pagination Controls */}
+        <div className="flex justify-between mt-4">
+          <button
+            onClick={prevPage}
+            disabled={currentPage === 1}
+            className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+          >
+            <FaArrowLeft /> 
+          </button>
+          <span className="text-lg">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={nextPage}
+            disabled={currentPage === totalPages}
+            className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+          >
+             <FaArrowRight />
+          </button>
+        </div>
+      </div>
+
+      {/* Modal for more details */}
+      {selectedStock && (
+        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-8 rounded shadow-md w-11/12 md:w-1/3">
+            <h3 className="text-2xl font-semibold mb-6">Stock Details</h3>
+            <div className="mb-4">
+              <p><strong>ID:</strong> {selectedStock.stock_id}</p>
+              <p><strong>Product Name:</strong> {selectedStock.product_name}</p>
+              <p><strong>Product Type:</strong> {selectedStock.product_type}</p>
+              <p><strong>Quantity:</strong> {selectedStock.product_quantity}</p>
+              <p><strong>Remaining Quantity:</strong> {selectedStock.remaing_quantity}</p>
+              <p><strong>Price per Unit:</strong> {selectedStock.price_per_unit}</p>
+              <p><strong>Total Price:</strong> {selectedStock.total_price}</p>
+              <p><strong>Date:</strong> {selectedStock.date}</p>
+              <p><strong>Profit Status:</strong> {selectedStock.profit_status}</p>
+              <p><strong>Transaction Type:</strong> {selectedStock.tra_type}</p>
+            </div>
+            <div className="flex justify-end">
               <button
-                onClick={handleCloseModal}
-                className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                onClick={closeModal}
+                className="bg-red-500 text-white px-6 py-2 rounded shadow hover:bg-red-600 transition"
               >
                 Close
               </button>
             </div>
           </div>
-        )}
-      </div>
-    </>
+        </div>
+      )}
+    </div>
   );
 };
 
-export default HomeDash;
+export default StockOut;
