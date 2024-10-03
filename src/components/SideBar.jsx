@@ -50,7 +50,7 @@ const Sidebar = ({ isOpen, setIsOpen, activeView, setActiveView }) => {
           { icon: <FaHistory />, label: "Transaction History", view: "Transactions" },
           { icon: <FaWallet />, label: "Account Balance", view: "Balance" },
           { icon: <FaClipboardList />, label: "Stock Report", view: "stock" },
-          { icon: <FaUserCog />, label: "User Settings", view: "Settings" },
+          // { icon: <FaUserCog />, label: "User Settings", view: "Settings" },
         ].map(({ icon, label, view }) => (
           <li key={label}>
             <Link

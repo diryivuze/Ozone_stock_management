@@ -83,7 +83,7 @@ const Dashboard = () => {
             {showDropdown && (
               <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
                 {/* Change the active view to "Settings" when clicked */}
-                <button
+                {/* <button
                   onClick={() => {
                     setActiveView("Settings");
                     setShowDropdown(false); // Close the dropdown after clicking
@@ -91,7 +91,7 @@ const Dashboard = () => {
                   className="block px-3 py-1.5 text-gray-800 font-bold hover:bg-blue-500 hover:text-white transition duration-300 ease-in-out text-sm"
                 >
                   Settings
-                </button>
+                </button> */}
 
                 {/* Logout button */}
                 <button
