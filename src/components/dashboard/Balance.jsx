@@ -22,7 +22,6 @@ const Balance = () => {
   const fetchBalances = async () => {
     try {
       const response = await api.get("/balance");
-      console.log("API response:", response.data);
       if (Array.isArray(response.data)) {
         setBalances(response.data);
       } else {

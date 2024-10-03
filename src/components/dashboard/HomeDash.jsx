@@ -5,7 +5,7 @@ import { AiFillCaretDown, AiFillCaretUp } from "react-icons/ai";
 import "react-toastify/dist/ReactToastify.css";
 import { publicAxios } from "../tokenGetter/api";
 
-const StockOut = () => {
+const StockOut = ({ setActiveView }) => {
   const api = publicAxios();
 
   const [stockData, setStockData] = useState([]);
@@ -13,6 +13,7 @@ const StockOut = () => {
   const itemsPerPage = 5; // Number of rows per page
   const [selectedStock, setSelectedStock] = useState(null); // For modal details
   const [expandedProducts, setExpandedProducts] = useState({}); // Track collapsed/expanded rows
+  const [empty,Setempty] = useState(false)
 
   useEffect(() => {
     getStockOutData();
@@ -23,10 +24,16 @@ const StockOut = () => {
       .post(`${import.meta.env.VITE_MAIN_URL}/stock/out/byDate`)
       .then((res) => {
         setStockData(res.data);
+        Setempty(false)
       })
       .catch((error) => {
+        Setempty(true)
         console.log(error);
       });
+  };
+  const handleSetActive = () => {
+    localStorage.setItem('viewmode', "Balance");
+    setActiveView("Balance") ;
   };
 
   // Handle pagination
@@ -64,16 +71,76 @@ const StockOut = () => {
   const closeModal = () => {
     setSelectedStock(null);
   };
+//------------------------------live get balances of data
+const [balances, setBalances] = useState([]);
+const [error, setError] = useState(null);
+
+
+useEffect(() => {
+  fetchBalances();
+}, []);
+
+const fetchBalances = async () => {
+  try {
+    const response = await api.get("/balance");
+    if (Array.isArray(response.data)) {
+      setBalances(response.data);
+    } else {
+      console.error("Unexpected API response format:", response.data);
+      setError("Unexpected data format received from the server");
+      setBalances([]);
+    }
+  } catch (error) {
+    console.error("Error fetching balances:", error);
+    setError("Failed to fetch balances. Please try again later.");
+    setBalances([]);
+  }
+};
+let cashToday = 0;
+let momoToday = 0;
+
+// Get today's date in 'YYYY-MM-DD' format
+let today = new Date().toISOString().split('T')[0];
+
+// Filter and sum up cash and momo balances for 'opening' type and today's date
+balances.filter(data => data.balance_type === "opening" && data.date === today).forEach(data => {
+  cashToday += data.cash_balance;
+  momoToday += data.momo_balance;
+});
+
+// Get yesterday's date in 'YYYY-MM-DD' format
+let yesterday = new Date();
+yesterday.setDate(yesterday.getDate() - 1);
+yesterday = yesterday.toISOString().split('T')[0];
+
+// Closing
+let cashTodayYest = 0;
+let momoTodayYest = 0;
+
+// Filter and sum up cash and momo balances for 'closing' type and yesterday's date
+balances.filter(data => data.balance_type === "closing" && data.date === yesterday).forEach(data => {
+  cashTodayYest += data.cash_balance;
+  momoTodayYest += data.momo_balance;
+});
+
+console.log("Cash Today:", cashToday);
+console.log("MoMo Today:", momoToday);
+console.log("Cash Yesterday (Closing):", cashTodayYest);
+console.log("MoMo Yesterday (Closing):", momoTodayYest);
+
+
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <ToastContainer />
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-bold">Stock Out Dashboard</h2>
-        <a href="/view-all-details" className="text-blue-500 hover:underline">
+        <a onClick={() => handleSetActive()} className="text-blue-500 hover:underline">
           View All in Details
         </a>
       </div>
+      
+      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
 
       {/* Responsive Boxes */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -81,24 +148,24 @@ const StockOut = () => {
           <FaMoneyBill className="text-green-500 text-3xl mr-4" />
           <div>
             <h4 className="text-lg font-semibold">Today's Earnings</h4>
-            <p>MoMo: Frw 2000</p>
-            <p>Cash: Frw 1500</p>
+            <p>MoMo: Frw {momoToday}</p>
+            <p>Cash: Frw {cashToday}</p>
           </div>
         </div>
         <div className="bg-white p-4 rounded shadow-md flex items-center">
           <FaMoneyBill className="text-yellow-500 text-3xl mr-4" />
           <div>
             <h4 className="text-lg font-semibold">Yesterday's Earnings</h4>
-            <p>MoMo: Frw 1800</p>
-            <p>Cash: Frw 1200</p>
+            <p>MoMo: Frw {momoTodayYest}</p>
+            <p>Cash: Frw {cashTodayYest}</p>
           </div>
         </div>
         <div className="bg-white p-4 rounded shadow-md flex items-center">
           <FaMoneyBill className="text-blue-500 text-3xl mr-4" />
           <div>
             <h4 className="text-lg font-semibold">Total Earnings</h4>
-            <p>MoMo: Frw 5000</p>
-            <p>Cash: Frw 2500</p>
+            <p>MoMo: Frw {momoToday + momoTodayYest}</p>
+            <p>Cash: Frw {cashTodayYest + cashToday} </p>
           </div>
         </div>
       </div>
@@ -122,6 +189,11 @@ const StockOut = () => {
               </tr>
             </thead>
             <tbody>
+              {empty &&
+                <tr>
+                  <td colSpan={"8"} align="center" className="p-5 capitalize text-red-500">nothing done Today</td>
+                </tr>
+              }
               {Object.keys(groupedStock)
                 .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                 .map((productName) => (
@@ -143,10 +215,10 @@ const StockOut = () => {
                       <td className="px-4 py-2 text-[#363579] font-bold">{groupedStock[productName].items[0].tra_type}</td>
                       <td
                         className={`px-4 py-2 text-[#363579] font-bold ${groupedStock[productName].items[0].profit_status === "profit"
-                            ? "text-green-500"
-                            : groupedStock[productName].items[0].profit_status === "loss"
-                              ? "text-red-500"
-                              : "text-yellow-500"
+                          ? "text-green-500"
+                          : groupedStock[productName].items[0].profit_status === "loss"
+                            ? "text-red-500"
+                            : "text-yellow-500"
                           }`}
                       >
                         {groupedStock[productName].items[0].profit_status}
@@ -175,10 +247,10 @@ const StockOut = () => {
                           <td className=" px-4 py-2">{item.tra_type}</td>
                           <td
                             className={` px-4 py-2 ${item.profit_status === "profit"
-                                ? "text-green-500"
-                                : item.profit_status === "loss"
-                                  ? "text-red-500"
-                                  : "text-yellow-500"
+                              ? "text-green-500"
+                              : item.profit_status === "loss"
+                                ? "text-red-500"
+                                : "text-yellow-500"
                               }`}
                           >
                             {item.profit_status}
@@ -199,7 +271,7 @@ const StockOut = () => {
             disabled={currentPage === 1}
             className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
           >
-            <FaArrowLeft /> 
+            <FaArrowLeft />
           </button>
           <span className="text-lg">
             Page {currentPage} of {totalPages}
@@ -209,7 +281,7 @@ const StockOut = () => {
             disabled={currentPage === totalPages}
             className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
           >
-             <FaArrowRight />
+            <FaArrowRight />
           </button>
         </div>
       </div>

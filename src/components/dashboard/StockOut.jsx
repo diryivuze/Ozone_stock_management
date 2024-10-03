@@ -35,6 +35,7 @@ const StockOut = () => {
         const mappedData = res.data.map((item) => ({
           id: item.Pro_id,
           productName: item.product_name,
+          price:item.product_price
         }));
         SetinitialStockItems(mappedData);
       })

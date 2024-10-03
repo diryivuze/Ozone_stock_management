@@ -33,7 +33,7 @@ const Dashboard = () => {
   const renderContent = () => {
     switch (activeView) {
       case "overview":
-        return <HomeDash />;
+        return <HomeDash setActiveView={setActiveView}/>;
       case "Products":
         return <Products />;
       case "stock":
