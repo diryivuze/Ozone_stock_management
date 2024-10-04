@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { publicAxios } from "../tokenGetter/api";
 import jsPDF from "jspdf"; // Import jsPDF for PDF generation
-
+import 'jspdf-autotable';
 const Balance = () => {
   const api = publicAxios();
   const [stockData, setStockData] = useState([]);
@@ -31,22 +31,43 @@ const Balance = () => {
 
   };
 
-  // Handle PDF download
   const handleDownloadPDF = () => {
     const doc = new jsPDF();
-    let y = 20;
-    doc.text("Stock Report", 10, y);
-    y += 10;
 
-    stockData.forEach((item) => {
-      doc.text(
-        `Product: ${item.product_name}, Quantity: ${item.product_quantity}, Price: ${item.price_per_unit}, Total: ${item.total_price}, Date: ${new Date(item.date).toLocaleDateString()}, Type: ${item.tra_type}, Profit: ${item.profit_status}`,
-        10,
-        y
-      );
-      y += 10;
+    // Title
+    doc.text("Stock Report", 14, 10);
+
+    // Define the columns
+    const tableColumn = [
+      "Product",
+      "Quantity",
+      "Price per Unit",
+      "Total Price",
+      "Date",
+      "Type",
+      "Profit Status"
+    ];
+
+    // Prepare the data to be displayed in the table
+    const tableRows = stockData.map((item) => [
+      item.product_name,
+      item.product_quantity,
+      item.price_per_unit,
+      item.total_price,
+      new Date(item.date).toLocaleDateString(),
+      item.tra_type,
+      item.profit_status,
+    ]);
+
+    // Generate the table
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20, // The position where the table starts in the PDF
+      theme: 'grid', // You can change this to 'plain' or 'striped' for different table styles
     });
 
+    // Save the PDF
     doc.save("stock_report.pdf");
   };
 
