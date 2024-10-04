@@ -23,6 +23,7 @@ const Balance = () => {
     api.post(`${import.meta.env.VITE_MAIN_URL}/stock/out/byDate?startDate=${startDate}&endDate=${endDate}`)
       .then((res) => {
         setStockData(res.data);
+        setError(null)
       })
       .catch((error) => {
         console.log(error);
@@ -158,7 +159,7 @@ const Balance = () => {
           </thead>
           <tbody>
             {stockData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => (
-              <tr key={item.stock_id} className="bg-white border-b">
+              <tr key={item.stock_id} className={` ${item.profit_status == "profit" ? "bg-green-50 text-green-500": item.profit_status == "loss" ? "bg-red-50 text-red-500":"bg-yellow-50 text-yellow-500"} border-b capitalize hover:bg-gray-50 cursor-pointer`}>
                 <td className="px-4 py-2">{item.stock_id}</td>
                 <td className="px-4 py-2">{item.product_name}</td>
                 <td className="px-4 py-2">{item.product_quantity}</td>
