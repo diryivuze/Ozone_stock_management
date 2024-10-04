@@ -1,154 +1,181 @@
-// src/components/dashboard/Stock.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { publicAxios } from "../tokenGetter/api";
+import jsPDF from "jspdf"; // Import jsPDF for PDF generation
 
-const Stock = () => {
-  const initialProducts = [
-    { id: 1, detail: "Donuts", quantity: 50, type: "Food", date: "2024-09-16" },
-    { id: 2, detail: "Cake", quantity: 30, type: "Food", date: "2024-09-15" },
-    { id: 3, detail: "Fanta (small)", quantity: 50, type: "Drink", date: "2024-09-15" },
-    { id: 4, detail: "Capati", quantity: 10, type: "Food", date: "2024-09-15" },
-    { id: 5, detail: "Meat Samosa", quantity: 5, type: "Food", date: "2024-09-14" },
-    { id: 6, detail: "Pizza", quantity: 2, type: "Food", date: "2024-09-14" },
-    { id: 7, detail: "Potato Samosa", quantity: 20, type: "Food", date: "2024-09-13" },
-    { id: 8, detail: "Inyange Juice", quantity: 8, type: "Drink", date: "2024-09-12" },
-  ];
+const Balance = () => {
+  const api = publicAxios();
+  const [stockData, setStockData] = useState([]);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [error, setError] = useState(null);
 
-  const initialReports = [
-    { id: 1, productName: "Donuts", quantity: 20, pricePerUnit: 5, action: "StockIn", date: "2024-09-15" },
-    { id: 2, productName: "Fanta (small)", quantity: 10, pricePerUnit: 1, action: "StockOut", date: "2024-09-16" },
-    { id: 3, productName: "Pizza", quantity: 15, pricePerUnit: 10, action: "StockIn", date: "2024-09-14" },
-    { id: 4, productName: "Cake", quantity: 5, pricePerUnit: 8, action: "StockOut", date: "2024-09-15" },
-    { id: 5, productName: "Potato Samosa", quantity: 8, pricePerUnit: 2, action: "StockIn", date: "2024-09-16" },
-    { id: 6, productName: "Inyange Juice", quantity: 12, pricePerUnit: 3, action: "StockOut", date: "2024-09-17" },
-    { id: 7, productName: "Meat Samosa", quantity: 3, pricePerUnit: 4, action: "StockOut", date: "2024-09-18" },
-    { id: 8, productName: "Capati", quantity: 10, pricePerUnit: 1, action: "StockIn", date: "2024-09-19" },
-  ];
+  // Fetch data when component mounts or date range changes
+  useEffect(() => {
+    if (startDate && endDate) {
+      getStockOutData();
+    }
+  }, [startDate, endDate]);
 
-  const [products] = useState(initialProducts);
-  const [reports, setReports] = useState(initialReports);
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const getStockOutData = () => {
+    api.post(`${import.meta.env.VITE_MAIN_URL}/stock/out/byDate?startDate=${startDate}&endDate=${endDate}`)
+      .then((res) => {
+        setStockData(res.data);
+      })
+      .catch((error) => {
+        console.log(error);
+        setError("Error fetching data");
+      });
 
-  // Pagination States
-  const [currentReportPage, setCurrentReportPage] = useState(1);
-  const reportsPerPage = 5;
+  };
 
-  // Date range filter for reports
-  const handleDateChange = () => {
-    const fromDate = new Date(dateFrom);
-    const toDate = new Date(dateTo);
+  // Handle PDF download
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+    let y = 20;
+    doc.text("Stock Report", 10, y);
+    y += 10;
 
-    const filteredReports = initialReports.filter((report) => {
-      const reportDate = new Date(report.date);
-      return reportDate >= fromDate && reportDate <= toDate;
+    stockData.forEach((item) => {
+      doc.text(
+        `Product: ${item.product_name}, Quantity: ${item.product_quantity}, Price: ${item.price_per_unit}, Total: ${item.total_price}, Date: ${new Date(item.date).toLocaleDateString()}, Type: ${item.tra_type}, Profit: ${item.profit_status}`,
+        10,
+        y
+      );
+      y += 10;
     });
 
-    setReports(filteredReports.length > 0 ? filteredReports : initialReports);
-    setCurrentReportPage(1); // Reset to first page after filter
-  };
-
-  // Pagination logic
-  const totalReportPages = Math.ceil(reports.length / reportsPerPage);
-  const indexOfLastReport = currentReportPage * reportsPerPage;
-  const indexOfFirstReport = indexOfLastReport - reportsPerPage;
-  const currentReports = reports.slice(indexOfFirstReport, indexOfLastReport);
-
-  const nextReportPage = () => {
-    if (currentReportPage < totalReportPages) {
-      setCurrentReportPage(currentReportPage + 1);
-    }
-  };
-
-  const prevReportPage = () => {
-    if (currentReportPage > 1) {
-      setCurrentReportPage(currentReportPage - 1);
-    }
+    doc.save("stock_report.pdf");
   };
 
   return (
-    <div className="p-6 bg-gray-100">
-      <h2 className="text-xl font-bold mb-4">Reports</h2>
+    <div className="p-4 relative min-h-screen bg-white rounded-lg">
+      <h2 className="text-xl font-bold mb-4 text-slate-800 pl-5">Report</h2>
 
-      {/* Date Filter */}
-      <div className="mb-4 flex">
-        <div className="mr-4">
-          <label className="mr-2 font-semibold">From:</label>
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            className="border border-gray-300 p-2 rounded"
-          />
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
         </div>
-        <div className="mr-4">
-          <label className="mr-2 font-semibold">To:</label>
-          <input
-            type="date"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            className="border border-gray-300 p-2 rounded"
-          />
-        </div>
+      )}
+
+      {/* Filter and Sort Controls */}
+      <div className="flex justify-between mb-4 pt-4 pl-5 pr-7 rounded-lg">
         <button
-          onClick={handleDateChange}
-          className="bg-blue-500 text-white px-5 py-2 rounded flex items-center"
+          onClick={() => setIsModalOpen(true)}
+          className="bg-yellow-500 text-white p-2 h-10 rounded shadow hover:bg-yellow-600 transition"
         >
-          Apply
+          Change Date Range
+        </button>
+
+        <button
+          onClick={handleDownloadPDF}
+          className="bg-blue-500 text-white p-2 h-10 rounded shadow hover:bg-blue-600 transition"
+        >
+          Download PDF Report
         </button>
       </div>
 
-      {/* Reports Table */}
-      <table className="min-w-full bg-white border border-gray-200 text-sm mb-6 shadow-lg">
-        <thead>
-          <tr className="text-left border-b bg-blue-50">
-            <th className="py-2 px-4 text-gray-600">Report ID</th>
-            <th className="py-2 px-4 text-gray-600">Product Name</th>
-            <th className="py-2 px-4 text-gray-600">Quantity</th>
-            <th className="py-2 px-4 text-gray-600">Price/Unit</th>
-            <th className="py-2 px-4 text-gray-600">Action</th>
-            <th className="py-2 px-4 text-gray-600">Amount</th>
-            <th className="py-2 px-4 text-gray-600">Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentReports.map((report) => (
-            <tr key={report.id} className="border-b hover:bg-gray-100">
-              <td className="py-2 px-4 text-gray-800">{report.id}</td>
-              <td className="py-2 px-4 text-gray-800">{report.productName}</td>
-              <td className="py-2 px-4 text-gray-800">{report.quantity}</td>
-              <td className="py-2 px-4 text-gray-800">{report.pricePerUnit}</td>
-              <td className="py-2 px-4 text-gray-800">{report.action}</td>
-              <td className="py-2 px-4 text-gray-800">
-                {report.quantity * report.pricePerUnit}
-              </td>
-              <td className="py-2 px-4 text-gray-800">{report.date}</td>
+      {/* Modal for changing date range */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded shadow-lg max-w-md w-full">
+            <h2 className="text-2xl font-bold mb-4 text-center">Choose Date Range</h2>
+            <div className="flex gap-5 justify-center">
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2" htmlFor="start-date">
+                  Start Date:
+                </label>
+                <input
+                  type="date"
+                  id="start-date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2" htmlFor="end-date">
+                  End Date:
+                </label>
+                <input
+                  type="date"
+                  id="end-date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded"
+                />
+              </div>
+            </div>
+            <div className="flex gap-4 justify-center">
+              <button
+                className="bg-green-500 text-white px-6 py-2 rounded shadow hover:bg-green-600 transition"
+                onClick={() => setIsModalOpen(false)}
+              >
+                Get Data
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Balance Table */}
+      <div className="p-5 w-full overflow-x-auto bg-gray-10 rounded-lg">
+        <table className="min-w-full table-auto border-collapse border border-gray-300 text-center">
+          <thead>
+            <tr className="bg-blue-100">
+              <th className="px-4 py-2">ID</th>
+              <th className="px-4 py-2">Product</th>
+              <th className="px-4 py-2">Quantity</th>
+              <th className="px-4 py-2">Price per Unit</th>
+              <th className="px-4 py-2">Total Price</th>
+              <th className="px-4 py-2">Date</th>
+              <th className="px-4 py-2">Type</th>
+              <th className="px-4 py-2">Profit Status</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {stockData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => (
+              <tr key={item.stock_id} className="bg-white border-b">
+                <td className="px-4 py-2">{item.stock_id}</td>
+                <td className="px-4 py-2">{item.product_name}</td>
+                <td className="px-4 py-2">{item.product_quantity}</td>
+                <td className="px-4 py-2">{item.price_per_unit}</td>
+                <td className="px-4 py-2">{item.total_price}</td>
+                <td className="px-4 py-2">{new Date(item.date).toLocaleDateString()}</td>
+                <td className="px-4 py-2">{item.tra_type}</td>
+                <td className="px-4 py-2">{item.profit_status}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* Pagination Controls */}
-      <div className="flex justify-center items-center mb-4">
-        <button
-          onClick={prevReportPage}
-          className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400 disabled:bg-gray-400"
-          disabled={currentReportPage === 1}
-        >
-          Previous
-        </button>
-        <span>
-        &nbsp;&nbsp; {currentReportPage} of {totalReportPages}
-        &nbsp;&nbsp;</span>
-        <button
-          onClick={nextReportPage}
-          className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400 disabled:bg-gray-400"
-          disabled={currentReportPage === totalReportPages}
-        >
-          Next
-        </button>
-      </div>
+      {Math.ceil(stockData.length / itemsPerPage) > 1 && (
+        <div className="flex justify-center items-center mt-4">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400"
+          >
+            Previous
+          </button>
+          <span className="mx-4">
+            {currentPage} of {Math.ceil(stockData.length / itemsPerPage)}
+          </span>
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(stockData.length / itemsPerPage)))}
+            disabled={currentPage === Math.ceil(stockData.length / itemsPerPage)}
+            className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 };
 
-export default Stock;
+export default Balance;
